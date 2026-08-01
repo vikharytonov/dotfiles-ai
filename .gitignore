@@ -1,0 +1,8 @@
+# Ignore backup configuration files
+*.backup
+
+# Ignore sensitive credentials that might get accidentally copied
+antigravity-oauth-token
+mcp_oauth_tokens.json
+installation_id
+*.log
