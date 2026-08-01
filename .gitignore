@@ -1,8 +1,35 @@
 # Ignore backup configuration files
 *.backup
 
-# Ignore sensitive credentials that might get accidentally copied
+# Security & Secrets Prevention (STRICT - DO NOT SHARE TOKENS OR SECRETS)
+.env
+.env.*
+!.env.example
+*.env
+*token*
+*secret*
+*credential*
+*.pem
+*.key
+*.p12
+*.pfx
+*_rsa
+*_ed25519
+id_rsa
+id_ed25519
 antigravity-oauth-token
 mcp_oauth_tokens.json
 installation_id
+
+# Local runtime data & machine-specific settings
 *.log
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+Thumbs.db
+node_modules/
+dist/
+build/
+.cache/
+tmp/
