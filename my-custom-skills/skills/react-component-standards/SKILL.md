@@ -1,74 +1,59 @@
 ---
 name: react-component-standards
-description: Enforces official React best practices, high performance, reusability, and clean code styles for creating and using React components.
+description: Enforces official React best practices, high performance, reusability, accessibility, state management, and clean code styles established over years of React development.
 ---
 
-# React Component Standards & Review
+# React Component Standards & Best Practices
 
-Use this skill whenever you are creating, refactoring, or reviewing React components. It ensures code adheres to the official React documentation, performance best practices, TypeScript strictness, and modern design systems.
-
-## 📌 Core Architecture & Best Practices
-1. **Function Components & Hooks**:
-   - Use standard function components (prefer arrow functions or standard declarations, be consistent).
-   - Always use modern hooks (`useState`, `useEffect`, `useMemo`, `useCallback`, `useId`, etc.).
-   - Custom Hooks: Extract complex stateful logic or side-effects into reusable custom hooks (e.g., `useCopy`, `useAuth`).
-
-2. **Strict Props & Types**:
-   - Define clear TypeScript interfaces/types for all component props.
-   - For components wrapping native HTML elements, extend the native component props using `React.ComponentPropsWithoutRef<"element">` or `React.ComponentPropsWithRef<"element">`.
-   - Example:
-     ```typescript
-     export interface ButtonProps extends React.ComponentPropsWithRef<"button"> {
-       variant?: "primary" | "secondary";
-     }
-     ```
-
-3. **DOM Ref Forwarding**:
-   - Use `React.forwardRef` for reusable UI/atom components so parent components can access the underlying DOM node.
-   - Example:
-     ```typescript
-     export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-       ({ className, children, ...props }, ref) => {
-         return (
-           <button ref={ref} className={cn("btn", className)} {...props}>
-             {children}
-           </button>
-         );
-       }
-     );
-     Button.displayName = "Button";
-     ```
+Use this skill whenever you are creating, refactoring, or reviewing React components. It enforces official React architecture principles, state minimization, effect synchronization rules, performance optimizations, TypeScript strictness, and accessibility.
 
 ---
 
-## ⚡ Performance Optimization
-1. **Unnecessary State**:
-   - Do not duplicate props in state.
-   - Derive values during rendering rather than storing them in state and syncing with `useEffect`.
-2. **Memoization Strategy**:
-   - Use `useMemo` for computationally expensive calculations.
-   - Use `useCallback` to preserve referential identity of callback props when passing them to memoized child components.
-   - Use `React.memo` selectively on expensive leaf components that render frequently with unchanged props.
-3. **Key Prop Rules**:
-   - Always provide unique, stable `key` props when rendering lists. Avoid using array indices as keys if list items can be reordered, deleted, or inserted.
+## 📚 Reference Documentation Index
+
+Before building or refactoring React components, consult the detailed topic references:
+
+| Reference | Use When |
+| :--- | :--- |
+| [`references/state-management.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/state-management.md) | Designing state structure, avoiding derived/redundant state, lifting state up, resetting state via `key`, or updating state immutably. |
+| [`references/effects-and-synchronization.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/effects-and-synchronization.md) | Determining when `useEffect` is required vs anti-pattern, handling fetch race conditions, cleaning up subscriptions, and creating custom hooks. |
+| [`references/performance-and-rendering.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/performance-and-rendering.md) | Pure rendering rules, list keys, pragmatic memoization (`useMemo`/`useCallback`/`React.memo`), `useRef` usage, and lazy loading with `Suspense`. |
+| [`references/component-design-and-a11y.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/component-design-and-a11y.md) | Designing component APIs, composition over props overload, extending native HTML attributes (`ComponentPropsWithRef`), compound components, `cn(...)` class merging, and WCAG/ARIA accessibility. |
 
 ---
 
-## 🎨 Styling & Reusability
-1. **Tailwind & Class Name Merging**:
-   - Always use the `cn(...)` utility (combining `clsx` and `tailwind-merge`) to merge incoming class names.
-   - Ensure default styles can be easily overridden by classes passed via props.
-2. **Semantic HTML**:
-   - Choose semantic HTML elements (`header`, `main`, `section`, `nav`, `button`, `article`) instead of nesting generic `div`s.
-   - Ensure components follow WCAG accessibility standards (e.g., proper ARIA attributes, button roles, keyboard navigability).
+## 📌 Core Architectural Principles
+
+1. **Pure Component Rendering**:
+   - Component render functions must be pure functions. Same props + state -> same JSX.
+   - Never mutate outer variables or trigger side-effects directly during the render phase.
+
+2. **Minimal & Derived State**:
+   - Compute values during render instead of creating extra state variables synced with `useEffect`.
+   - Never duplicate props into local state unless explicitly seeding initial state for an isolated draft editor.
+
+3. **Effects are ONLY for Synchronization**:
+   - Use `useEffect` strictly to synchronize with external systems (DOM APIs, websockets, third-party libraries).
+   - User interactions (clicks, submits) belong in event handlers, NOT in effects.
+
+4. **DOM & Ref Access**:
+   - Wrap reusable primitives with `React.forwardRef` to expose underlying DOM nodes.
+   - Extend `React.ComponentPropsWithRef<"element">` to inherit all standard HTML/ARIA attributes seamlessly.
+
+5. **Tailwind & Class Merging**:
+   - Combine `clsx` and `tailwind-merge` via `cn(...)` to allow clean class overrides without style specificity collisions.
 
 ---
 
-## 🔍 Change-in-Progress Review Checklist
-Before marking any React component task as done, review the following:
-*   [ ] Does the component extend standard HTML attributes where applicable?
-*   [ ] If it wraps a native element, does it use `forwardRef` correctly?
-*   [ ] Are class names merged safely using `cn(...)`?
-*   [ ] Are there any redundant state variables or unnecessary `useEffect` hooks?
-*   [ ] Is lists rendering using stable keys?
-*   [ ] Does it compile without TypeScript errors?
+## 🔍 Pre-Submission Quality Checklist
+
+Before marking any React component task as complete, verify against this checklist:
+
+- [ ] **Pure Rendering**: Does the component render without side-effects in the render phase?
+- [ ] **Derived State**: Are calculated values computed directly during render rather than stored in state/effects?
+- [ ] **Effect Check**: Are effects used only for external system synchronization and properly cleaned up?
+- [ ] **Ref & Props**: Does the primitive extend native element props and forward DOM refs correctly?
+- [ ] **Class Merging**: Are classes merged safely using `cn(...)`?
+- [ ] **List Keys**: Are list items rendered with stable, unique IDs (avoiding non-deterministic or array index keys when reordering/filtering)?
+- [ ] **Accessibility**: Are semantic HTML tags used (`<button>` instead of `<div onClick>`), with visible focus states and proper ARIA tags?
+- [ ] **TypeScript**: Is the component strictly typed without `any` escape hatches?
