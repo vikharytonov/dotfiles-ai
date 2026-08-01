@@ -19,6 +19,7 @@ Before building or refactoring React components, consult the detailed topic refe
 | [`references/effects-and-synchronization.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/effects-and-synchronization.md) | Determining when `useEffect` is required vs anti-pattern, handling fetch race conditions, cleaning up subscriptions, and creating custom hooks. |
 | [`references/performance-and-rendering.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/performance-and-rendering.md) | Pure rendering rules, list keys, pragmatic memoization (`useMemo`/`useCallback`/`React.memo`), `useRef` usage, and lazy loading with `Suspense`. |
 | [`references/component-design-and-a11y.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/component-design-and-a11y.md) | Designing component APIs, composition over props overload, extending native HTML attributes (`ComponentPropsWithRef`), compound components, `cn(...)` class merging, and WCAG/ARIA accessibility. |
+| [`references/sources.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/sources.md) | Checking upstream official React documentation, TypeScript cheatsheets, W3C WAI-ARIA specs, and release notes for future updates to this skill. |
 
 ---
 
