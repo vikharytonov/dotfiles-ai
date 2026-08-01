@@ -5,32 +5,35 @@ description: Generate Conventional Commit messages based on git diffs, task cont
 
 # Commit Skill
 
-Use this skill when you need to generate a git commit message for changes made in the workspace.
-
-## 📌 Context Information to Collect
-1. **Git Branch Name**: Run `git branch --show-current` to understand the branch-specific task context.
-2. **Git Diff**: Run `git diff` (and `git diff --cached`) to inspect code additions, modifications, and deletions.
-3. **Task / Goal Context**: Read recent conversation turns or issue/PR context to understand the *why* behind changes.
-4. **Reviews / Feedback**: Review any user or reviewer requests that led to changes.
+Use this skill whenever you need to generate a git commit message for code changes made in the workspace. It enforces Conventional Commit formatting, header length limits (<=80 chars), body bullet limits (<=60 chars), imperative mood, and context gathering protocols.
 
 ---
 
-## 🚦 Formatting Guidelines
+## 📚 Reference Documentation Index
 
-Your generated commit message MUST follow these strict formatting guidelines:
+Before generating a commit message, consult the relevant topic guides:
 
-### 1. Title (Header)
-* Use the **Conventional Commits** format: `<type>(<scope>): <short summary>` (e.g., `feat(auth): add login endpoint`).
-* Limit the title to around **80 characters** maximum.
-* Do not end the title with a period.
-* Use the imperative mood (e.g., "add", "fix", "relocate" instead of "added", "fixed", "relocated").
+| Reference | Use When |
+| :--- | :--- |
+| [`references/conventional-commits.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/conventional-commits.md) | Checking strict formatting rules, header limits (<=80 chars), body bullet limits (<=60 chars), imperative mood, and breaking change syntax. |
+| [`references/context-gathering.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/context-gathering.md) | Executing the step-by-step protocol to inspect branch name, `git diff`, `git diff --cached`, untracked files, and conversation context. |
+| [`references/commit-types-and-examples.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/commit-types-and-examples.md) | Selecting the correct commit type (`feat`, `fix`, `docs`, `refactor`, `perf`, `test`, etc.) and reviewing real-world commit examples. |
+| [`references/sources.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/sources.md) | Checking official Conventional Commits specifications, Angular commit guidelines, and Git documentation resources. |
 
-### 2. Body / Bullet Points (Optional)
-* If additional context is needed, provide a bulleted list of changes.
-* Each bullet point must be a short description of what was done.
-* **Strict Limit**: Each bullet point must NOT exceed **60 characters**.
-* Example:
-  ```
-  - Move configuration file to new skill subdirectory
-  - Update imports and paths in relevant files
-  ```
+---
+
+## 📌 Quick Rules Summary
+
+1. **Header Line**:
+   * Format: `<type>(<scope>): <short summary>`
+   * Length limit: Maximum **80 characters**.
+   * Mood: **Imperative** (e.g., `add`, `fix`, `update`, `remove`).
+   * Punctuation: **No period** at the end.
+
+2. **Body & Bullet Points**:
+   * Separate header from body with a blank line.
+   * Format: Bulleted list (`- `).
+   * **Strict Length Limit**: Each bullet line must NOT exceed **60 characters**.
+
+3. **Context Check**:
+   * Check `git branch --show-current`, `git diff`, and `git diff --cached` before writing the message. Do not guess code changes.
