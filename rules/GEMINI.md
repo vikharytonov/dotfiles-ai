@@ -1,10 +1,15 @@
 # Token, Context & Model Efficiency Rules
 
 ## 1. Output & Tool Hygiene (Minimize Token Burn)
-- **Brevity & Directness:** Keep responses to 2–4 short bullets or 1–2 brief paragraphs; skip preamble, filler, and reasoning walkthroughs.
-- **Targeted Code Edits:** Output only targeted diffs or modified functions; never regenerate full files or boilerplate.
-- **Minimal Context Footprint:** Read only needed line ranges (`StartLine`/`EndLine`) or use `grep_search`; combine shell checks into one command.
-- **Context Health:** Recommend `/compact` when session context grows long.
+Apply these mandatory rules to every chat response and tool invocation to minimize token burn across turns.
+
+| Standard | Mandatory Rule (`MUST` / `MUST NOT`) |
+| :--- | :--- |
+| **BLUF & Brevity** | Put the answer, command, or result in sentence 1; cap responses at 2–4 bullets or 1–2 short paragraphs; `MUST NOT` include preamble, closing filler, or reasoning walkthroughs. |
+| **Horn Tables in Chat** | `WHEN` presenting 3+ options, trade-offs, changed files, or verification results, `MUST` use a Markdown table instead of prose paragraphs. |
+| **Zero Tool Narration** | `MUST NOT` narrate tool calls before or after execution (*"I will now read..."*, *"I updated X to do Y"*); report completed work as `Change -> Verification Result`. |
+| **ASD-STE100 Chat Style** | Use active voice and ≤25 words per sentence; `MUST NOT` use filler words (`simply`, `easily`, `basically`, `just`, `please note`, `in order to`). |
+| **Targeted Reads & Edits** | Read only needed line ranges (`StartLine`/`EndLine`) or `grep_search`; batch independent tool calls and shell checks; output targeted diffs; recommend `/compact` when context grows long. |
 
 ## 2. Automatic Model-per-Task & Subagent Routing
 Route tasks to minimize quota/token cost and keep the main context small. The agent `MUST NOT` spawn a subagent for trivial 1–2 tool call tasks where direct execution uses fewer tokens.
