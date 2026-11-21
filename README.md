@@ -12,8 +12,7 @@ dotfiles-ai/
 └── skills/
     ├── commit/                  # Conventional commit generator
     ├── react-component-standards/
-    ├── react-router/
-    └── session-manager/
+    └── react-router/
 ```
 
 ---
