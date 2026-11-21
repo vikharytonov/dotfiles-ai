@@ -5,56 +5,44 @@ description: Enforces official React best practices, high performance, reusabili
 
 # React Component Standards & Best Practices
 
-Use this skill whenever you are creating, refactoring, or reviewing React components. It enforces official React architecture principles, state minimization, effect synchronization rules, performance optimizations, TypeScript strictness, and accessibility.
+Use this skill whenever creating, refactoring, or reviewing React components. Enforce pure rendering, minimal state, strict effect boundaries, composable APIs, TypeScript strictness, and WCAG accessibility.
 
----
+## 1. State Management & Data Flow
+- **Minimal & Derived State:** Never store computed values in `useState` or sync them via `useEffect`. Compute derived values directly during render (`const fullName = `${first} ${last}``).
+- **Do Not Mirror Props in State:** Render props directly. If seeding an isolated draft editor, prefix the prop with `initial*` (`initialName`) or reset the component instance via `key`.
+- **Reset State via `key`:** Pass a unique `key={entityId}` to a child component (`<ProfileEditor key={userId} userId={userId} />`) to cleanly reset internal state on entity changes instead of resetting state in `useEffect`.
+- **State Colocation & Lifting:** Keep state in the lowest common ancestor that needs it. Use local state for single-component UI, localized Context for compound component subtrees, and global state only for app-wide concerns.
+- **Immutability & Functional Updaters:** Never mutate state arrays/objects directly. Use functional updaters (`setItems(prev => [...prev, item])`) when next state depends on previous state.
+- **Focused Context:** Split unrelated concerns into separate Contexts and memoize provider values when necessary so consumers do not re-render unnecessarily.
 
-## 📚 Reference Documentation Index
+## 2. Effects & Synchronization ("You Might Not Need an Effect")
+`useEffect` is strictly for **synchronizing with external systems** (DOM listeners, timers, WebSockets, non-React widgets, or network subscriptions).
 
-Before building or refactoring React components, consult the detailed topic references:
+| Goal | Anti-Pattern | Do This Instead |
+| :--- | :--- | :--- |
+| Transform data for rendering | `useEffect` + `useState` | Compute directly in component body during render |
+| Cache expensive calculation | `useEffect` + `useState` | `useMemo(() => compute(a, b), [a, b])` |
+| Handle user clicks / submits | `useEffect` watching state flag | Execute logic directly in `onClick` / `onSubmit` handler |
+| Reset state when prop changes | `useEffect` calling `setState` | Pass `key={propId}` to the component |
+| Notify parent of state change | `useEffect` calling `onChange` | Call `onChange` inside the event handler that updates state |
 
-| Reference | Use When |
-| :--- | :--- |
-| [`references/state-management.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/state-management.md) | Designing state structure, avoiding derived/redundant state, lifting state up, resetting state via `key`, or updating state immutably. |
-| [`references/effects-and-synchronization.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/effects-and-synchronization.md) | Determining when `useEffect` is required vs anti-pattern, handling fetch race conditions, cleaning up subscriptions, and creating custom hooks. |
-| [`references/performance-and-rendering.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/performance-and-rendering.md) | Pure rendering rules, list keys, pragmatic memoization (`useMemo`/`useCallback`/`React.memo`), `useRef` usage, and lazy loading with `Suspense`. |
-| [`references/component-design-and-a11y.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/component-design-and-a11y.md) | Designing component APIs, composition over props overload, extending native HTML attributes (`ComponentPropsWithRef`), compound components, `cn(...)` class merging, and WCAG/ARIA accessibility. |
-| [`references/sources.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/react-component-standards/references/sources.md) | Checking upstream official React documentation, TypeScript cheatsheets, W3C WAI-ARIA specs, and release notes for future updates to this skill. |
+- **Cleanup & Race Conditions:** Every effect that registers listeners, timers, or async fetches must return a cleanup function (e.g., `AbortController` or `let ignore = false` flag on async fetches) and survive React `StrictMode` double-invocation.
+- **Custom Hooks:** Extract non-trivial or reusable effect synchronization into focused `use*` custom hooks.
 
----
+## 3. Performance & Rendering
+- **Pure Render Phase:** Render must be a pure function of props, state, and context—never mutate external variables, touch the DOM, or trigger side-effects during render.
+- **Stable List Keys:** Always use stable, unique entity IDs (`key={item.id}`). Never use `Math.random()` or array indices for lists that can filter, sort, or reorder.
+- **Pragmatic Memoization:** Do not wrap cheap expressions in `useMemo`/`useCallback`. Use `useMemo` for heavy computations or referential identity passed to dependencies/memoized children; use `useCallback` for callbacks passed to `React.memo` children or hook dependencies (or rely on React Compiler where enabled).
+- **Refs (`useRef`):** Use `useRef<ReturnType<typeof setInterval> | null>(null)` or DOM refs for mutable values that persist across renders without triggering re-renders.
+- **Code Splitting:** Use `React.lazy` + `<Suspense fallback={...}>` for heavy, non-critical UI (charts, rich editors, modals).
 
-## 📌 Core Architectural Principles
-
-1. **Pure Component Rendering**:
-   - Component render functions must be pure functions. Same props + state -> same JSX.
-   - Never mutate outer variables or trigger side-effects directly during the render phase.
-
-2. **Minimal & Derived State**:
-   - Compute values during render instead of creating extra state variables synced with `useEffect`.
-   - Never duplicate props into local state unless explicitly seeding initial state for an isolated draft editor.
-
-3. **Effects are ONLY for Synchronization**:
-   - Use `useEffect` strictly to synchronize with external systems (DOM APIs, websockets, third-party libraries).
-   - User interactions (clicks, submits) belong in event handlers, NOT in effects.
-
-4. **DOM & Ref Access**:
-   - Wrap reusable primitives with `React.forwardRef` to expose underlying DOM nodes.
-   - Extend `React.ComponentPropsWithRef<"element">` to inherit all standard HTML/ARIA attributes seamlessly.
-
-5. **Tailwind & Class Merging**:
-   - Combine `clsx` and `tailwind-merge` via `cn(...)` to allow clean class overrides without style specificity collisions.
-
----
-
-## 🔍 Pre-Submission Quality Checklist
-
-Before marking any React component task as complete, verify against this checklist:
-
-- [ ] **Pure Rendering**: Does the component render without side-effects in the render phase?
-- [ ] **Derived State**: Are calculated values computed directly during render rather than stored in state/effects?
-- [ ] **Effect Check**: Are effects used only for external system synchronization and properly cleaned up?
-- [ ] **Ref & Props**: Does the primitive extend native element props and forward DOM refs correctly?
-- [ ] **Class Merging**: Are classes merged safely using `cn(...)`?
-- [ ] **List Keys**: Are list items rendered with stable, unique IDs (avoiding non-deterministic or array index keys when reordering/filtering)?
-- [ ] **Accessibility**: Are semantic HTML tags used (`<button>` instead of `<div onClick>`), with visible focus states and proper ARIA tags?
-- [ ] **TypeScript**: Is the component strictly typed without `any` escape hatches?
+## 4. Component API Design & Accessibility (WCAG / ARIA)
+- **Composition Over Props Overload:** Avoid "god components" with many boolean flags (`showHeader`, `showFooter`). Use `children` slots or Compound Components (`<Card><Card.Header />...</Card>` or `<Tabs>` backed by Context).
+- **Extend Native HTML Attributes & Refs:**
+  - Extend `React.ComponentPropsWithRef<'button'>` (or target element) and spread `...props` so consumers can pass `aria-*`, `data-*`, `disabled`, and event handlers.
+  - In React 19+, accept `ref` directly as a prop (`function Button({ ref, className, ...props }: ButtonProps)`); in React 18, wrap primitives in `React.forwardRef`.
+  - Merge incoming `className` safely with `cn(...)` (`clsx` + `tailwind-merge`).
+- **Accessibility Requirements:**
+  - **Semantic HTML First:** Use `<button>` for actions (never `<div onClick>`), `<a href>` for navigation, and landmarks (`<main>`, `<nav>`, `<header>`).
+  - **Keyboard & Focus:** Ensure interactive elements are tab-focusable with visible focus rings (`focus-visible:ring-2`), and trap/restore focus in modals/drawers.
+  - **Forms & Dynamic ARIA:** Pair every input with a `<label htmlFor>` (or `aria-label`), link errors via `aria-describedby`/`aria-errormessage`, and expose state via `aria-expanded`, `aria-pressed`, `aria-selected`, and `aria-busy`.
