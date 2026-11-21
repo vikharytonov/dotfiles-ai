@@ -7,7 +7,7 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== Setting up Custom Antigravity Skills ===${NC}"
+echo -e "${BLUE}=== Setting up Custom Antigravity Skills & Global Rules ===${NC}"
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -34,6 +34,24 @@ else
   echo -e "  ${GREEN}✓${NC} Linking $SRC_PLUGIN to $DEST_PLUGIN"
   ln -s "$SRC_PLUGIN" "$DEST_PLUGIN"
 fi
+
+# Link global rules (GEMINI.md / AGENTS.md)
+echo -e "\n${BLUE}Linking global AI rules (GEMINI.md & AGENTS.md):${NC}"
+SRC_RULE="$SRC_PLUGIN/rules/GEMINI.md"
+for DEST_RULE in "$HOME/.gemini/GEMINI.md" "$HOME/.gemini/AGENTS.md"; do
+  if [ -e "$DEST_RULE" ] || [ -L "$DEST_RULE" ]; then
+    if [ -L "$DEST_RULE" ] && [ "$(readlink "$DEST_RULE")" = "$SRC_RULE" ]; then
+      echo -e "  ${GREEN}✓${NC} $(basename "$DEST_RULE") is already correctly linked."
+    else
+      cp -f "$DEST_RULE" "${DEST_RULE}.backup"
+      ln -sf "$SRC_RULE" "$DEST_RULE"
+      echo -e "  ${GREEN}✓${NC} Linked $SRC_RULE to $DEST_RULE (backup at ${DEST_RULE}.backup)"
+    fi
+  else
+    ln -sf "$SRC_RULE" "$DEST_RULE"
+    echo -e "  ${GREEN}✓${NC} Linked $SRC_RULE to $DEST_RULE"
+  fi
+done
 
 # Link individual custom skills to global skill locations
 echo -e "\n${BLUE}Linking individual skills to global skill locations:${NC}"

@@ -1,23 +1,24 @@
-# Custom AI Agent Skills
+# Custom AI Agent Skills & Global Rules
 
-A repository for version controlling and synchronizing your custom global Google Antigravity skills across machines.
+A repository for version-controlling and synchronizing your custom global Google Antigravity (and universal AI agent) rules and skills across machines.
 
 ## Structure
-- `my-custom-skills/`: Contains the plugin definition and your custom skill files.
+- `my-custom-skills/`: Contains the plugin definition, global rules, and custom skill files.
   - `plugin.json`: Plugin description.
-  - `skills/`: Put any custom `.md` skill files in this directory to share them.
+  - `rules/GEMINI.md`: Always-on global AI rules (Token/Model routing + Fundamental Code & Comment Principles). Symlinked to `~/.gemini/GEMINI.md` and `~/.gemini/AGENTS.md` (compatible with Antigravity, Gemini CLI, Claude Code, Codex, and Cursor).
+  - `skills/`: Put any custom skill directories in this folder to share them across machines.
 
-## Installation / Sync
+## Installation / Sync on Any Laptop
 
 1. Clone this repository on your workstation:
    ```bash
-   git clone <your-repo-url> ~/dotfiles-ai
+   git clone https://github.com/vikharytonov/dotfiles-ai.git ~/projects/dotfiles-ai
    ```
 
-2. Run the setup script to symlink the custom skills plugin and download the official `agent-skills` repository:
+2. Run the setup script to symlink the global rules (`GEMINI.md` & `AGENTS.md`), custom skills plugin, and official `agent-skills` repository:
    ```bash
-   chmod +x ~/dotfiles-ai/setup.sh
-   ~/dotfiles-ai/setup.sh
+   chmod +x ~/projects/dotfiles-ai/setup.sh
+   ~/projects/dotfiles-ai/setup.sh
    ```
 
-Any changes or new skills added to `~/dotfiles-ai/my-custom-skills/skills/` will automatically be loaded by Antigravity on all linked workstations.
+Any updates pushed to `my-custom-skills/rules/GEMINI.md` or `my-custom-skills/skills/` will automatically take effect across all linked workstations after `git pull`.
