@@ -10,6 +10,7 @@ Apply these mandatory rules to every chat response and tool invocation to minimi
 | **Zero Tool Narration** | `MUST NOT` narrate tool calls before or after execution (*"I will now read..."*, *"I updated X to do Y"*); report completed work as `Change -> Verification Result`. |
 | **ASD-STE100 Chat Style** | Use active voice and ≤25 words per sentence; `MUST NOT` use filler words (`simply`, `easily`, `basically`, `just`, `please note`, `in order to`). |
 | **Targeted Reads & Edits** | Read only needed line ranges (`StartLine`/`EndLine`) or `grep_search`; batch independent tool calls and shell checks; output targeted diffs; recommend `/compact` when context grows long. |
+| **Code Review Format** | `WHEN` outputting a code review, `MUST` start on line 1 with `**Verdict: <Approve \| Request changes>**` followed immediately by a 1-line summary, omitting any `Review:` title header. |
 
 ## 2. Automatic Model-per-Task & Subagent Routing
 Route tasks to minimize quota/token cost and keep the main context small. The agent `MUST NOT` spawn a subagent for trivial 1–2 tool call tasks where direct execution uses fewer tokens.
