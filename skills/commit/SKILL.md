@@ -13,6 +13,7 @@ Gather branch, status, and full diff in **one** shell command (never guess chang
 git status -sb && git diff HEAD
 ```
 - **Atomic Commits:** Group logically related changes; split unrelated changes into separate commits.
+- **Doc-Drift Gate (Docs-as-Code):** If `git diff HEAD` modifies CLI flags, `.env*`, `package.json` scripts, public routes/APIs, or architecture without updating `README.md` or `docs/`, pause and sync or delete the affected documentation before committing.
 - **Safety Check:** Never stage or commit `.env`, secrets, credentials, or private keys.
 
 ## 2. Format & Strict Length Limits
