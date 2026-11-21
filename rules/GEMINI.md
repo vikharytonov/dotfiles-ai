@@ -11,17 +11,13 @@ Route tasks to minimize quota/token cost and keep the main context small. The ag
 
 | Tier & Models | Scope | Execution & Subagent Action |
 | :--- | :--- | :--- |
-| **Tier 0: Micro** (`gemini-4-hydrogen-medium`/`high`) | `selfcare` check-ins, 1-file surgical edits, quick bash/git checks, direct Q&A (≤2 tool calls) | Execute directly in main session (zero subagent overhead) regardless of active model. |
+| **Tier 0: Micro** (`gemini-4-hydrogen-medium`/`high`) | 1-file surgical edits, quick bash/git checks, direct Q&A (≤2 tool calls) | Execute directly in main session (zero subagent overhead) regardless of active model. |
 | **Tier 1: Fast Offload** (`Model='flash'` or `'flash_lite'`) | Broad searches (`>4` files), doc/web lookups (`research`), large log/transcript parsing (`flash_lite`), unit tests (`test-engineer`), lint/type loops, bulk Kanban tickets, README/table/changelog sync (`self`) | **Auto-delegate (>2 tool calls):** Spawn `invoke_subagent(..., Model='flash')` with clear brief and rule/skill pointers; require a 2–4 bullet summary back. |
 | **Tier 2: Standard** (`gemini-4-neon-medium`/`high`, `gemini-pro-orchestrator-neon`) | PoC spikes, Walking Skeleton (CI/CD, test harness, `CONSTRAINTS.md`), QRH runbooks, 1–3 file MVP features, UI components, CRUD routes, moderate regressions | On **Neon/Orchestrator**: execute directly (or fan out parallel `self` slices). On **Argon**: plan in 2–3 bullets and offload boilerplate/test loops to `self` (`Model='flash'`). |
 | **Tier 3: Frontier** (`gemini-4-argon-medium`/`high`, `gemini-pro-orchestrator-argon`, `Model='pro'`) | PRD/EARS specs (`Argon medium`), architecture/C4/ADRs/threat modeling (`Argon high`), multi-file MVP slices (`Orchestrator`), critical auth/payment/HMAC/crypto, PRR, profiling/N+1/races, zero-downtime DB migrations | On **Argon**: execute core reasoning/security directly and offload repetitive file/test steps to `Model='flash'`. On **Hydrogen/Neon**: auto-escalate via `invoke_subagent(TypeName='self'\|'security-auditor'\|'code-reviewer', Model='pro')`. |
 
 - **Subagent Brief Contract:** `WHEN` spawning any subagent, the brief `MUST` state: (1) exact files/scope owned, (2) skill or `GEMINI.md` section to apply (e.g., *"Follow GEMINI.md Section 3 Clean Code"* or *"Load `documentation-standards` skill"*), (3) verification command, and (4) *"Return a 2–4 bullet summary only."*
 - **Model Switch Hint:** The agent `MUST` suggest a manual `/model` switch (1 short line) ONLY when shifting an entire project phase for a multi-turn session (load `project-lifecycle-models` at transitions).
-
-- **`/home/vikharitonov/projects/selfcare`:** Strictly Tier 0 (1 CLI command + 2–4 bullet response) unless an explicit system upgrade is requested.
-- **Code Projects (`doubtless` / `shopify-ai-qa`):** Offload broad doc/spec scans to `research` (`flash`), do targeted coding in main session, and reserve `pro` for multi-file architecture or security/App Proxy routes.
-- **Post-Reboot eGPU Reminder (`"remaind command"` / `"remind command"`):** Output and explain `cat /proc/cmdline && cat /sys/bus/pci/devices/0000:03:00.0/pp_dpm_pcie && journalctl -b 0 -k | grep -c "AER:"` (checks active GRUB `amdgpu` flags, RX 9060 XT PCIe link speed/DPM states, and `0` PCIe AER bus errors).
 
 ## 3. Fundamental Code & Comment Principles (Mandatory Baseline)
 Apply these mandatory rules whenever writing, updating, refactoring, or deleting ANY code (React, TypeScript, backend, scripts) or comments.
