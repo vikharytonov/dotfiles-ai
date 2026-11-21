@@ -11,6 +11,7 @@ dotfiles-ai/
 │   └── GEMINI.md                # Always-on global rules (Clean Code, surgical edits, model routing)
 └── skills/
     ├── commit/                  # Conventional commit generator
+    ├── project-lifecycle-models/# 8-phase industry SDLC & Gemini 4 model routing
     ├── react-component-standards/
     └── react-router/
 ```
