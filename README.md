@@ -1,68 +1,62 @@
 # Dotfiles-AI: Global AI Rules & Modular Skills
 
-Version-controlled global rules (`GEMINI.md` / `AGENTS.md`) and modular skills for Google Antigravity (`agy`), Claude Code, Gemini CLI, and Cursor.
+Version-controlled global AI rules (`GEMINI.md`) and modular skills for Google Antigravity (`agy`), Claude Code, Gemini CLI, and Cursor.
 
-## Repository Structure (Flat Layout)
-```text
-dotfiles-ai/
-├── plugin.json                  # Root Antigravity plugin manifest
-├── setup.sh                     # Modular installer (all, rules-only, or single skill)
-├── rules/
-│   └── GEMINI.md                # Always-on global rules (Clean Code, surgical edits, model routing)
-└── skills/
-    ├── commit/                  # Conventional commit generator (+ Doc-Drift Gate)
-    ├── documentation-standards/ # Dual-Audience (STE100, Diátaxis, EARS, C4, QRH) docs & validator
-    ├── project-lifecycle-models/# 8-phase industry SDLC & Gemini 4 model routing
-    ├── react-component-standards/
-    └── react-router/
-```
+## Quick Start
 
----
+Install the full bundle locally or via the native Antigravity plugin CLI.
 
-## Option 1: Install a Single Skill or Rule Only (No Full Clone Required)
+1. Clone the repository and run the full installer:
+   ```bash
+   git clone https://github.com/vikharytonov/dotfiles-ai.git ~/projects/dotfiles-ai && ~/projects/dotfiles-ai/setup.sh
+   ```
+   **Verify:** Output ends with `=== Setup completed successfully! ===` and `readlink ~/.gemini/GEMINI.md` resolves to `rules/GEMINI.md`.
+2. Or install natively with the Antigravity plugin CLI ([plugin.json](plugin.json)):
+   ```bash
+   agy plugin install https://github.com/vikharytonov/dotfiles-ai
+   ```
+   **Verify:** `agy plugin list` includes `dotfiles-ai`.
 
-### Install or Update One Skill Directly from GitHub (One-Liner)
-Replace `<skill-name>` with any folder under `skills/` (e.g., `commit`, `react-router`, `selfcare-coach`):
-```bash
-SKILL=commit && mkdir -p ~/.gemini/config/skills ~/.gemini/antigravity-cli/skills && \
-  curl -sL https://github.com/vikharytonov/dotfiles-ai/archive/refs/heads/main.tar.gz | \
-  tar -xz --strip-components=2 -C ~/.gemini/config/skills "dotfiles-ai-main/skills/$SKILL" && \
-  ln -sfn ~/.gemini/config/skills/$SKILL ~/.gemini/antigravity-cli/skills/$SKILL
-```
+## Modular Installation (`setup.sh`)
 
-### Install or Update Only Global Rules (`GEMINI.md` & `AGENTS.md`)
-```bash
-mkdir -p ~/.gemini && curl -sL https://raw.githubusercontent.com/vikharytonov/dotfiles-ai/main/rules/GEMINI.md \
-  -o ~/.gemini/GEMINI.md && ln -sfn ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md
-```
+Run [setup.sh](setup.sh) flags to install or remove individual rules and skills without modifying unrelated modules.
 
----
+| Command | Action | Target Paths |
+| :--- | :--- | :--- |
+| `./setup.sh` | Install plugin, rules, all skills, and `agent-skills` | `~/.gemini/{GEMINI.md,AGENTS.md,config/plugins,config/skills,antigravity-cli/skills}` |
+| `./setup.sh --list` | List available skills in `skills/` | `stdout` |
+| `./setup.sh --rules` | Link global rules (`GEMINI.md` and `AGENTS.md`) | `~/.gemini/GEMINI.md`, `~/.gemini/AGENTS.md` |
+| `./setup.sh --skill <name>` | Symlink a single skill by directory name | `~/.gemini/{config,antigravity-cli}/skills/<name>` |
+| `./setup.sh --remove-skill <name>` | Remove a single installed skill symlink | `~/.gemini/{config,antigravity-cli}/skills/<name>` |
 
-## Option 2: Local Clone with Per-Skill CLI (`setup.sh`)
+**Verify:** Run `~/projects/dotfiles-ai/setup.sh --list` or `ls -la ~/.gemini/antigravity-cli/skills/` to confirm expected skill symlinks exist.
 
-If you clone the repo (`git clone https://github.com/vikharytonov/dotfiles-ai.git ~/projects/dotfiles-ai`), `setup.sh` supports modular commands:
+### Remote Single-Item Install (No Clone)
 
-```bash
-# List all available skills
-~/projects/dotfiles-ai/setup.sh --list
+1. Install or update one skill directly from GitHub:
+   ```bash
+   SKILL=commit && mkdir -p ~/.gemini/config/skills ~/.gemini/antigravity-cli/skills && \
+     curl -sL https://github.com/vikharytonov/dotfiles-ai/archive/refs/heads/main.tar.gz | \
+     tar -xz --strip-components=2 -C ~/.gemini/config/skills "dotfiles-ai-main/skills/$SKILL" && \
+     ln -sfn ~/.gemini/config/skills/$SKILL ~/.gemini/antigravity-cli/skills/$SKILL
+   ```
+   **Verify:** `test -f ~/.gemini/antigravity-cli/skills/$SKILL/SKILL.md && echo "OK"` outputs `OK`.
+2. Install or update only global rules (`GEMINI.md` and `AGENTS.md`):
+   ```bash
+   mkdir -p ~/.gemini && curl -sL https://raw.githubusercontent.com/vikharytonov/dotfiles-ai/main/rules/GEMINI.md \
+     -o ~/.gemini/GEMINI.md && ln -sfn ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md
+   ```
+   **Verify:** `head -n 1 ~/.gemini/AGENTS.md` outputs `# Token, Context & Model Efficiency Rules`.
 
-# Install or update a single skill
-~/projects/dotfiles-ai/setup.sh --skill commit
+## Documentation & Skills Map (Diátaxis Index)
 
-# Remove a single skill
-~/projects/dotfiles-ai/setup.sh --remove-skill wow-linux-setup
+Core rules and modular skills organized by Diátaxis type and Gemini 4 execution tier.
 
-# Install or update only global rules (GEMINI.md & AGENTS.md)
-~/projects/dotfiles-ai/setup.sh --rules
-
-# Install everything (plugin + rules + all skills)
-~/projects/dotfiles-ai/setup.sh
-```
-
----
-
-## Option 3: Native Antigravity Plugin CLI (`agy plugin`)
-Because `plugin.json` is at the repository root, you can also install or validate the entire bundle natively with `agy`:
-```bash
-agy plugin install https://github.com/vikharytonov/dotfiles-ai
-```
+| Module | Type | Tier | Path | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **Global Rules** | Reference | All Tiers (Baseline) | [rules/GEMINI.md](rules/GEMINI.md) | Token efficiency, model routing, Clean Code, and doc standards |
+| **Commit** | How-To | Tier 0–1 (Hydrogen) | [skills/commit/SKILL.md](skills/commit/SKILL.md) | Conventional Commits v1.0.0 generator with Doc-Drift Gate |
+| **Documentation Standards** | Reference / How-To | Tier 1–3 (Doc-scoped) | [skills/documentation-standards/SKILL.md](skills/documentation-standards/SKILL.md) | Dual-Audience (STE100, Diátaxis, EARS, C4, QRH) rules and validator |
+| **Project Lifecycle Models** | Explanation | Tier 2–3 (Phase gates) | [skills/project-lifecycle-models/SKILL.md](skills/project-lifecycle-models/SKILL.md) | 8-phase SDLC framework and Gemini 4 model selection |
+| **React Component Standards** | Reference | Tier 2 (Neon) | [skills/react-component-standards/SKILL.md](skills/react-component-standards/SKILL.md) | React Clean Code, derived state, effect hygiene, and WCAG rules |
+| **React Router (v7+)** | Reference | Tier 2 (Neon) | [skills/react-router/SKILL.md](skills/react-router/SKILL.md) | React Router v7+ modes, `loader`/`action`, fetchers, and typegen |

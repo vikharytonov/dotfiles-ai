@@ -3,7 +3,6 @@ set -e
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
@@ -18,8 +17,8 @@ usage() {
   echo "  ./setup.sh                      # Install everything (rules + all skills + agent-skills)"
   echo "  ./setup.sh --list               # List available skills in dotfiles-ai"
   echo "  ./setup.sh --rules              # Install/update only global rules (GEMINI.md & AGENTS.md)"
-  echo "  ./setup.sh --skill <name>       # Install/update a single skill by name"
-  echo "  ./setup.sh --remove-skill <name># Remove a single installed skill by name"
+  echo "  ./setup.sh --skill <name>        # Install/update a single skill by name"
+  echo "  ./setup.sh --remove-skill <name> # Remove a single installed skill by name"
 }
 
 link_rules() {
