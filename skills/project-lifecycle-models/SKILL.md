@@ -7,7 +7,7 @@ description: Guides project lifecycle phases (from Discovery and PoC to Architec
 
 Ground every project in this 8-phase engineering lifecycle synthesized from **Boehm's Spiral Model**, **Domain-Driven Design (DDD)**, **ThoughtWorks Evolutionary Architecture**, **DORA / Continuous Delivery**, **NIST SSDF**, **Google SRE**, and **Clean Code**.
 
-At every phase boundary, tell the user which **Gemini 4 model** (`agy --model <id>` or `/model`) best fits the upcoming work and why.
+At every phase boundary, tell the user which **Gemini 4 model** (`agy --model <id>` or `/model`) best fits the upcoming phase. **During any phase, if the main session is running on a heavier model (e.g., Gemini 4 Argon) and a sub-task belongs to a lighter tier (>2 tool calls of research, unit test writing, lint fixes, Kanban ticket drafting, or doc table syncing), automatically spawn an `invoke_subagent` with `Model='flash'` (or `Model='pro'` when escalating from Hydrogen/Neon) instead of making the user switch `/model` manually.**
 
 ---
 

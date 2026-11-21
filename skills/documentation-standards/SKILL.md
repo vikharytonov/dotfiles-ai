@@ -11,7 +11,7 @@ This skill translates **8 proven industrial & aerospace documentation frameworks
 
 ## 1. Model Routing by Documentation Task
 
-Always match the Gemini 4 model tier to the cognitive depth of the documentation task:
+Always match the Gemini 4 model tier to the cognitive depth of the documentation task. **If the main session is on Argon or Neon and the task is a multi-step Reference/Syncing or Runbook update (>2 tool calls), automatically delegate it via `invoke_subagent(TypeName='self', Model='flash')` (or escalate ADRs/EARS specs via `Model='pro'` if the main session is on Hydrogen) with an explicit brief to load `documentation-standards` and run `verify-docs.sh`:**
 
 | Doc Category | Recommended Model | Why |
 | :--- | :--- | :--- |

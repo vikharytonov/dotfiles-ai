@@ -9,22 +9,23 @@
   - Recommend `/compact` when a session's context grows long.
 
 ## 2. Automatic Model-per-Task & Subagent Routing
-Explicit user requirement: Route tasks to minimize quota/token cost and keep the main context window small. **Never spawn a subagent if direct execution uses fewer tokens than subagent startup overhead.**
+Explicit user requirement: Route tasks to minimize quota/token cost and keep the main context window small. **Never spawn a subagent for trivial 1–2 tool call tasks where direct execution uses fewer tokens than subagent startup overhead.**
 
-- **Tier 0 — Direct Fast Execution (`gemini-4-hydrogen-medium`/`high`, Zero Subagent Overhead):**
-  - *Scope:* Routine check-ins (`selfcare`), 1–3 file edits, unit tests, lint/type fixes, Kanban tickets, docs/changelogs, targeted bash/git commands, and direct Q&A.
-  - *Action:* Execute directly in the main session in 1–2 tool calls.
-- **Tier 1 — Context Offloading (`TypeName='research'`, `Model='flash'` / `gemini-4-hydrogen-medium`):**
-  - *Scope:* Discovery & market/doc/web lookups, noisy/broad searches (`>4` files), or large log/transcript parsing (`flash_lite`) that would bloat the main conversation history.
-  - *Action:* Spawn `research` with `Model='flash'` (or `'flash_lite'`) and require a concise bulleted summary back.
+- **Tier 0 — Direct Micro-Tasks (`gemini-4-hydrogen-medium`/`high`, Zero Subagent Overhead):**
+  - *Scope:* Routine check-ins (`selfcare`), 1-file surgical edits, quick bash/git checks, and direct Q&A (≤2 tool calls).
+  - *Action:* Execute directly in the main session in 1–2 tool calls regardless of active model.
+- **Tier 1 — Fast Discovery & Execution Offloading (`invoke_subagent` with `Model='flash'` or `'flash_lite'`):**
+  - *Scope:* Broad/noisy searches (`>4` files), doc/web lookups (`TypeName='research'`), large log/transcript parsing (`Model='flash_lite'`), unit test generation/runs (`TypeName='test-engineer'`), lint/typecheck fix loops, bulk Kanban ticket drafting, and README/table/changelog doc syncing (`TypeName='self'`, `Model='flash'`).
+  - *Action:* **Auto-Delegate to `Model='flash'` (Hydrogen tier):** Whenever a Tier 1 task requires >2 tool calls (especially if the main session is on a heavy model like **Argon** or **Neon**), spawn a `Model='flash'` subagent with a clear brief and relevant rule/skill pointers, requiring a 2–4 bullet summary back.
 - **Tier 2 — PoC & Standard Iterative Delivery (`gemini-4-neon-medium`/`high` or `gemini-pro-orchestrator-neon`):**
-  - *Scope:* PoC technical spikes, Walking Skeleton (CI/CD, test harness, `CONSTRAINTS.md`), standard 1–3 file MVP features, UI components, CRUD routes, and moderate regressions.
-  - *Action:* Handle directly in the main session (use `Orchestrator (Neon)` for multi-step feature loops or `Model='inherit'` subagents for parallel independent work).
-- **Tier 3 — Deep Architecture, Core Security & Audits (`gemini-4-argon-medium`/`high`, `gemini-pro-orchestrator-argon`, or `/boost`):**
-  - *Scope:* PRD & domain modeling (`Argon medium`), system architecture/ADRs/threat modeling (`Argon high`), multi-file MVP feature slices (`Orchestrator (Argon)`), critical auth/payment/HMAC/crypto code, Production Readiness Reviews (PRR), profiling/N+1/race conditions, and zero-downtime DB migrations.
-  - *Action:* Use `Argon` or `Orchestrator (Argon)` (or delegate to `TypeName='self'`, `Model='pro'` / `/boost`) with verification checks.
-- **Proactive Lifecycle & Model Routing Reminder:**
-  - Whenever the user starts a project, shifts lifecycle phases (e.g., Discovery -> PoC -> Architecture -> Walking Skeleton -> MVP -> PRR Launch -> Operations -> Scale/Migrations), or runs a task mismatched with the active model tier, proactively recommend the optimal `/model` switch in 1 short line (load the `project-lifecycle-models` skill for full phase playbooks).
+  - *Scope:* PoC technical spikes, Walking Skeleton (CI/CD, test harness, `CONSTRAINTS.md`), QRH runbooks, standard 1–3 file MVP features, UI components, CRUD routes, and moderate regressions.
+  - *Action:* If main session is on **Neon** or **Orchestrator**, execute directly (or fan out independent parallel slices via `TypeName='self'`). If main session is on **Argon**, plan the change in 2–3 bullets and offload boilerplate implementation/test loops to `TypeName='self', Model='flash'`.
+- **Tier 3 — Deep Architecture, Core Security & Audits (`gemini-4-argon-medium`/`high`, `gemini-pro-orchestrator-argon`, or `Model='pro'`):**
+  - *Scope:* PRD & EARS specs (`Argon medium`), system architecture/C4 diagrams/ADRs/threat modeling (`Argon high`), multi-file MVP feature slices (`Orchestrator (Argon)`), critical auth/payment/HMAC/crypto code, Production Readiness Reviews (PRR), profiling/N+1/race conditions, and zero-downtime DB migrations.
+  - *Action:* If main session is already on **Argon**, execute core reasoning/security code directly and offload repetitive file/test steps to `Model='flash'` subagents. If main session is on **Hydrogen/Neon**, auto-escalate by spawning `invoke_subagent(TypeName='self' | 'security-auditor' | 'code-reviewer', Model='pro')`.
+- **Subagent Brief Contract & Optional `/model` Hint:**
+  - Every spawned subagent brief MUST explicitly state: (1) exact files/scope owned, (2) which skill or `GEMINI.md` section to apply (e.g., *"Follow GEMINI.md Section 3 Clean Code"* or *"Load `documentation-standards` skill"*), (3) verification command to run, and (4) *"Return a 2–4 bullet summary only."*
+  - Only suggest a manual `/model` switch (in 1 short line) when shifting an entire project phase for a long multi-turn session (load `project-lifecycle-models` skill at phase transitions).
 - **Project Context Overrides:**
   - **`/home/vikharitonov/projects/selfcare`:** Strictly Tier 0 (1 CLI command + 2–4 bullet response) unless an explicit system upgrade is requested.
   - **Code Projects (`doubtless` / `shopify-ai-qa`):** Offload broad doc/spec scans to `research` (`flash`), do targeted coding in the main session, and reserve `pro` for multi-file architecture or security/App Proxy routes.
