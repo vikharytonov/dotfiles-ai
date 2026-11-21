@@ -1,85 +1,118 @@
 #!/bin/bash
 set -e
 
-# Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-echo -e "${BLUE}=== Setting up Custom Antigravity Skills & Global Rules ===${NC}"
+RED='\033[0;31m'
+NC='\033[0m'
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Ensure config and skills directories exist
 mkdir -p ~/.gemini/config/plugins
 mkdir -p ~/.gemini/antigravity-cli/skills
 mkdir -p ~/.gemini/config/skills
 
-# Link the custom skills plugin
-echo -e "\n${BLUE}Linking custom skills plugin:${NC}"
-SRC_PLUGIN="$DOTFILES_DIR/my-custom-skills"
-DEST_PLUGIN="$HOME/.gemini/config/plugins/my-custom-skills"
+usage() {
+  echo -e "${BLUE}Usage:${NC}"
+  echo "  ./setup.sh                      # Install everything (rules + all skills + agent-skills)"
+  echo "  ./setup.sh --list               # List available skills in dotfiles-ai"
+  echo "  ./setup.sh --rules              # Install/update only global rules (GEMINI.md & AGENTS.md)"
+  echo "  ./setup.sh --skill <name>       # Install/update a single skill by name"
+  echo "  ./setup.sh --remove-skill <name># Remove a single installed skill by name"
+}
 
-if [ -e "$DEST_PLUGIN" ] || [ -L "$DEST_PLUGIN" ]; then
-  if [ -L "$DEST_PLUGIN" ] && [ "$(readlink "$DEST_PLUGIN")" = "$SRC_PLUGIN" ]; then
-    echo -e "  ${GREEN}✓${NC} Custom skills plugin is already correctly linked."
-  else
-    echo -e "  ${YELLOW}!${NC} Backing up existing $DEST_PLUGIN to ${DEST_PLUGIN}.backup"
-    mv "$DEST_PLUGIN" "${DEST_PLUGIN}.backup"
-    echo -e "  ${GREEN}✓${NC} Linking $SRC_PLUGIN to $DEST_PLUGIN"
-    ln -s "$SRC_PLUGIN" "$DEST_PLUGIN"
-  fi
-else
-  echo -e "  ${GREEN}✓${NC} Linking $SRC_PLUGIN to $DEST_PLUGIN"
-  ln -s "$SRC_PLUGIN" "$DEST_PLUGIN"
-fi
-
-# Link global rules (GEMINI.md / AGENTS.md)
-echo -e "\n${BLUE}Linking global AI rules (GEMINI.md & AGENTS.md):${NC}"
-SRC_RULE="$SRC_PLUGIN/rules/GEMINI.md"
-for DEST_RULE in "$HOME/.gemini/GEMINI.md" "$HOME/.gemini/AGENTS.md"; do
-  if [ -e "$DEST_RULE" ] || [ -L "$DEST_RULE" ]; then
-    if [ -L "$DEST_RULE" ] && [ "$(readlink "$DEST_RULE")" = "$SRC_RULE" ]; then
-      echo -e "  ${GREEN}✓${NC} $(basename "$DEST_RULE") is already correctly linked."
-    else
+link_rules() {
+  echo -e "${BLUE}Linking global AI rules (GEMINI.md & AGENTS.md):${NC}"
+  SRC_RULE="$DOTFILES_DIR/rules/GEMINI.md"
+  for DEST_RULE in "$HOME/.gemini/GEMINI.md" "$HOME/.gemini/AGENTS.md"; do
+    if [ -e "$DEST_RULE" ] && [ ! -L "$DEST_RULE" ]; then
       cp -f "$DEST_RULE" "${DEST_RULE}.backup"
-      ln -sf "$SRC_RULE" "$DEST_RULE"
-      echo -e "  ${GREEN}✓${NC} Linked $SRC_RULE to $DEST_RULE (backup at ${DEST_RULE}.backup)"
     fi
-  else
     ln -sf "$SRC_RULE" "$DEST_RULE"
-    echo -e "  ${GREEN}✓${NC} Linked $SRC_RULE to $DEST_RULE"
+    echo -e "  ${GREEN}✓${NC} Linked $(basename "$DEST_RULE") -> $SRC_RULE"
+  done
+}
+
+install_skill() {
+  local SKILL_NAME="$1"
+  local SKILL_DIR="$DOTFILES_DIR/skills/$SKILL_NAME"
+
+  if [ ! -d "$SKILL_DIR" ]; then
+    echo -e "  ${RED}✗${NC} Skill '$SKILL_NAME' not found in $DOTFILES_DIR/skills/"
+    exit 1
   fi
+
+  for TARGET_BASE in "$HOME/.gemini/antigravity-cli/skills" "$HOME/.gemini/config/skills"; do
+    rm -rf "$TARGET_BASE/$SKILL_NAME"
+    ln -s "$SKILL_DIR" "$TARGET_BASE/$SKILL_NAME"
+  done
+  echo -e "  ${GREEN}✓${NC} Installed skill: $SKILL_NAME"
+}
+
+remove_skill() {
+  local SKILL_NAME="$1"
+  rm -rf "$HOME/.gemini/antigravity-cli/skills/$SKILL_NAME" "$HOME/.gemini/config/skills/$SKILL_NAME"
+  echo -e "  ${GREEN}✓${NC} Removed skill: $SKILL_NAME"
+}
+
+list_skills() {
+  echo -e "${BLUE}Available skills in $DOTFILES_DIR/skills/:${NC}"
+  for SKILL_DIR in "$DOTFILES_DIR/skills/"*/; do
+    [ -d "$SKILL_DIR" ] && echo "  - $(basename "$SKILL_DIR")"
+  done
+}
+
+# Handle single-command flags
+case "${1:-}" in
+  --help|-h)
+    usage
+    exit 0
+    ;;
+  --list|-l)
+    list_skills
+    exit 0
+    ;;
+  --rules|-r)
+    link_rules
+    exit 0
+    ;;
+  --skill|-s)
+    if [ -z "${2:-}" ]; then echo -e "${RED}Error: Missing skill name.${NC}"; usage; exit 1; fi
+    install_skill "$2"
+    exit 0
+    ;;
+  --remove-skill)
+    if [ -z "${2:-}" ]; then echo -e "${RED}Error: Missing skill name.${NC}"; usage; exit 1; fi
+    remove_skill "$2"
+    exit 0
+    ;;
+esac
+
+echo -e "${BLUE}=== Setting up Dotfiles-AI (Rules & Skills) ===${NC}"
+
+# Clean up legacy my-custom-skills symlink if present
+rm -rf "$HOME/.gemini/config/plugins/my-custom-skills"
+
+# Link root dotfiles-ai plugin
+DEST_PLUGIN="$HOME/.gemini/config/plugins/dotfiles-ai"
+rm -rf "$DEST_PLUGIN"
+ln -s "$DOTFILES_DIR" "$DEST_PLUGIN"
+echo -e "  ${GREEN}✓${NC} Linked plugin: dotfiles-ai"
+
+link_rules
+
+echo -e "\n${BLUE}Installing all skills:${NC}"
+for SKILL_DIR in "$DOTFILES_DIR/skills/"*/; do
+  [ -d "$SKILL_DIR" ] && install_skill "$(basename "$SKILL_DIR")"
 done
 
-# Link individual custom skills to global skill locations
-echo -e "\n${BLUE}Linking individual skills to global skill locations:${NC}"
-for SKILL_DIR in "$SRC_PLUGIN/skills/"*/; do
-  if [ -d "$SKILL_DIR" ]; then
-    SKILL_NAME="$(basename "$SKILL_DIR")"
-
-    # ~/.gemini/antigravity-cli/skills/<skill_name>
-    CLI_SKILL_DEST="$HOME/.gemini/antigravity-cli/skills/$SKILL_NAME"
-    rm -rf "$CLI_SKILL_DEST"
-    ln -s "$SKILL_DIR" "$CLI_SKILL_DEST"
-    echo -e "  ${GREEN}✓${NC} Linked $SKILL_NAME to ~/.gemini/antigravity-cli/skills/"
-
-    # ~/.gemini/config/skills/<skill_name>
-    CONFIG_SKILL_DEST="$HOME/.gemini/config/skills/$SKILL_NAME"
-    rm -rf "$CONFIG_SKILL_DEST"
-    ln -s "$SKILL_DIR" "$CONFIG_SKILL_DEST"
-    echo -e "  ${GREEN}✓${NC} Linked $SKILL_NAME to ~/.gemini/config/skills/"
-  fi
-done
-
-# Optional: Setup official agent-skills repo if desired
 echo -e "\n${BLUE}Checking official agent-skills plugin:${NC}"
 SKILLS_REPO_DIR="$HOME/.gemini/config/plugins/agent-skills"
 SKILLS_REPO_URL="https://github.com/addyosmani/agent-skills.git"
 
 if [ -d "$SKILLS_REPO_DIR" ]; then
-  echo -e "  ${GREEN}✓${NC} agent-skills repository already exists. Pulling latest updates..."
+  echo -e "  ${GREEN}✓${NC} agent-skills exists. Pulling latest updates..."
   git -C "$SKILLS_REPO_DIR" pull
 else
   echo -e "  ${GREEN}✓${NC} Cloning agent-skills repository..."

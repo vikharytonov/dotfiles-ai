@@ -1,0 +1,8 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "dotfiles-ai",
+  "displayName": "Dotfiles AI",
+  "version": "1.1.0",
+  "description": "Global Clean Code rules, efficiency guidelines, and custom AI skills shared across workstations.",
+  "repository": "https://github.com/vikharytonov/dotfiles-ai"
+}

@@ -1,24 +1,69 @@
-# Custom AI Agent Skills & Global Rules
+# Dotfiles-AI: Global AI Rules & Modular Skills
 
-A repository for version-controlling and synchronizing your custom global Google Antigravity (and universal AI agent) rules and skills across machines.
+Version-controlled global rules (`GEMINI.md` / `AGENTS.md`) and modular skills for Google Antigravity (`agy`), Claude Code, Gemini CLI, and Cursor.
 
-## Structure
-- `my-custom-skills/`: Contains the plugin definition, global rules, and custom skill files.
-  - `plugin.json`: Plugin description.
-  - `rules/GEMINI.md`: Always-on global AI rules (Token/Model routing + Fundamental Code & Comment Principles). Symlinked to `~/.gemini/GEMINI.md` and `~/.gemini/AGENTS.md` (compatible with Antigravity, Gemini CLI, Claude Code, Codex, and Cursor).
-  - `skills/`: Put any custom skill directories in this folder to share them across machines.
+## Repository Structure (Flat Layout)
+```text
+dotfiles-ai/
+├── plugin.json                  # Root Antigravity plugin manifest
+├── setup.sh                     # Modular installer (all, rules-only, or single skill)
+├── rules/
+│   └── GEMINI.md                # Always-on global rules (Clean Code, surgical edits, model routing)
+└── skills/
+    ├── commit/                  # Conventional commit generator
+    ├── react-component-standards/
+    ├── react-router/
+    ├── selfcare-coach/
+    ├── session-manager/
+    └── wow-linux-setup/
+```
 
-## Installation / Sync on Any Laptop
+---
 
-1. Clone this repository on your workstation:
-   ```bash
-   git clone https://github.com/vikharytonov/dotfiles-ai.git ~/projects/dotfiles-ai
-   ```
+## Option 1: Install a Single Skill or Rule Only (No Full Clone Required)
 
-2. Run the setup script to symlink the global rules (`GEMINI.md` & `AGENTS.md`), custom skills plugin, and official `agent-skills` repository:
-   ```bash
-   chmod +x ~/projects/dotfiles-ai/setup.sh
-   ~/projects/dotfiles-ai/setup.sh
-   ```
+### Install or Update One Skill Directly from GitHub (One-Liner)
+Replace `<skill-name>` with any folder under `skills/` (e.g., `commit`, `react-router`, `selfcare-coach`):
+```bash
+SKILL=commit && mkdir -p ~/.gemini/config/skills ~/.gemini/antigravity-cli/skills && \
+  curl -sL https://github.com/vikharytonov/dotfiles-ai/archive/refs/heads/main.tar.gz | \
+  tar -xz --strip-components=2 -C ~/.gemini/config/skills "dotfiles-ai-main/skills/$SKILL" && \
+  ln -sfn ~/.gemini/config/skills/$SKILL ~/.gemini/antigravity-cli/skills/$SKILL
+```
 
-Any updates pushed to `my-custom-skills/rules/GEMINI.md` or `my-custom-skills/skills/` will automatically take effect across all linked workstations after `git pull`.
+### Install or Update Only Global Rules (`GEMINI.md` & `AGENTS.md`)
+```bash
+mkdir -p ~/.gemini && curl -sL https://raw.githubusercontent.com/vikharytonov/dotfiles-ai/main/rules/GEMINI.md \
+  -o ~/.gemini/GEMINI.md && ln -sfn ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md
+```
+
+---
+
+## Option 2: Local Clone with Per-Skill CLI (`setup.sh`)
+
+If you clone the repo (`git clone https://github.com/vikharytonov/dotfiles-ai.git ~/projects/dotfiles-ai`), `setup.sh` supports modular commands:
+
+```bash
+# List all available skills
+~/projects/dotfiles-ai/setup.sh --list
+
+# Install or update a single skill
+~/projects/dotfiles-ai/setup.sh --skill commit
+
+# Remove a single skill
+~/projects/dotfiles-ai/setup.sh --remove-skill wow-linux-setup
+
+# Install or update only global rules (GEMINI.md & AGENTS.md)
+~/projects/dotfiles-ai/setup.sh --rules
+
+# Install everything (plugin + rules + all skills)
+~/projects/dotfiles-ai/setup.sh
+```
+
+---
+
+## Option 3: Native Antigravity Plugin CLI (`agy plugin`)
+Because `plugin.json` is at the repository root, you can also install or validate the entire bundle natively with `agy`:
+```bash
+agy plugin install https://github.com/vikharytonov/dotfiles-ai
+```
