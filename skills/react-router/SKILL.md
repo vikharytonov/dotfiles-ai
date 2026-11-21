@@ -1,122 +1,49 @@
 ---
 name: react-router
-description: Build applications with React Router in Framework, Data, Declarative, and unstable RSC modes. Use when configuring routes, route modules, loaders, actions, forms, fetchers, navigation, pending UI, SSR/SPA/pre-rendering, middleware, URL params/search params, or React Router upgrades.
+description: Build applications with React Router v7+ in Framework, Data, Declarative, and RSC modes. Use when configuring routes, route modules, loaders, actions, forms, fetchers, navigation, pending UI, SSR/SPA/pre-rendering, middleware, URL params/search params, or React Router upgrades.
 license: MIT
 ---
 
-# React Router
+# React Router (v7+)
 
-React Router is mode-specific. Before changing an app, identify the mode, load the matching reference, then read the installed docs for the installed package version.
+**Mandatory Base Rule:** All React Router code written, updated, or deleted MUST strictly follow the global **Fundamental Code & Comment Principles** (`rules/GEMINI.md` Section 3: minimal code chunks, guard clauses, self-explaining names, zero narrator comments, strict comment-code sync/deletion, and surgical diffs).
 
-## Identify the Mode
+## 1. Core Clean Code & v7 Package Rules
+- **Unified Package Imports:** Always import from `"react-router"` (never `"react-router-dom"` or `"@remix-run/*"`). Use `@react-router/dev/routes` (`index`, `route`, `layout`, `prefix`) only inside `app/routes.ts`.
+- **Small, Flat `loader` & `action` Functions:**
+  - Use early guard clauses (`if (!session) throw redirect("/login");`, `if (!item) throw data("Not Found", { status: 404 });`).
+  - Keep `loader` and `action` thin: extract database queries, validation, and business logic into self-explaining server functions (`getProjectById`, `validateCheckoutForm`) instead of bloated inline blocks.
+- **No Route-Level `useEffect` Fetching:** In Framework and Data modes, always load via `loader`/`clientLoader` and mutate via `action`/`clientAction`.
 
-Do not apply Framework/Data patterns to a Declarative app unless you are intentionally migrating modes.
+## 2. Identify the App Mode First
+Never mix mode patterns unless explicitly migrating:
 
-### Framework Mode
+| Mode | How to Detect | Core Primitives |
+| :--- | :--- | :--- |
+| **Framework Mode** | `@react-router/dev` in `package.json`, `react-router.config.ts`, `app/routes.ts`, `./+types/<route>` | Route modules (`loader`, `action`, `clientLoader`, `clientAction`, `default`, `ErrorBoundary`, `HydrateFallback`, `meta`, `middleware`), SSR/SPA/prerender |
+| **Data Mode** | `createBrowserRouter` / `createMemoryRouter` + `<RouterProvider>` without `@react-router/dev/vite` | Route objects (`path`, `Component`, `ErrorBoundary`, `loader`, `action`, `lazy`, `children`) defined outside render |
+| **Declarative Mode** | `<BrowserRouter>`, `<Routes>`, `<Route element={<Comp />}>` | Client-only routing (`<Outlet>`, `<Link>`, `<NavLink>`, `useParams`, `useSearchParams`, `useNavigate`). **No** loaders, actions, `<Form>`, or `useFetcher` |
+| **Unstable RSC Mode** | `unstable_reactRouterRSC`, `@vitejs/plugin-rsc`, or `unstable_RSCRouteConfig` | `ServerComponent`, `ServerLayout`, `ServerErrorBoundary`, `"use client"`, `"server-only"` boundaries |
 
-Use Framework Mode guidance when you see:
+## 3. Framework Mode Standards
+- **Route Types (`typegen`):** Import generated types via `import type { Route } from "./+types/<route>";` and type signatures with `Route.LoaderArgs`, `Route.ActionArgs`, `Route.ComponentProps`, `Route.MetaArgs`, and `Route.MiddlewareFunction`. Never edit `.react-router/types`.
+- **Component Props over Hooks in Route Modules:** Read `loaderData`, `actionData`, `params`, and `matches` directly from `Route.ComponentProps` in the route's default component; `meta` receives `{ loaderData }` (do not use deprecated `data`).
+- **Server/Client Isolation:** Keep Node/DB/secret logic in `.server.ts` modules called only from `loader`, `action`, or server `middleware`.
+- **v7.9–v7.18+ Features:** Support `future.v8_middleware` (`middleware` / `clientMiddleware`), `future.v8_splitRouteModules`, `future.v8_viteEnvironmentApi`, and `fetcher.reset()` when enabled in `react-router.config.ts`.
 
-- `@react-router/dev` in dependencies
-- `react-router.config.ts`
-- `app/routes.ts`
-- `app/entry.server.tsx` and/or `app/entry.client.tsx` files
-- route modules under `app/routes/`
-- route exports like `loader`, `action`, `clientLoader`, `clientAction`, `ErrorBoundary`, `meta`, `links`, or `headers`
-- imports from `./+types/...`
-- the React Router Vite plugin from `@react-router/dev/vite`
+## 4. Shared Data & Framework Patterns (Loaders, Actions, Forms, Fetchers)
+- **Responses & Errors:**
+  - Validation error in `action`: `return data({ errors }, { status: 400 })` and render via `actionData` or `fetcher.data`.
+  - Not found / fatal error in `loader`: `throw data("Not Found", { status: 404 })` to trigger the nearest `ErrorBoundary`.
+  - Let React Router automatically revalidate loaders after actions unless `shouldRevalidate` is explicitly required.
+- **Form vs. Fetcher Selection:**
+  - `<Form method="get">`: Search/filter updates that change URL search params (`new URL(request.url).searchParams` in `loader`).
+  - `<Form method="post">`: Mutations that navigate or add a history entry/redirect.
+  - `useFetcher()` / `<fetcher.Form>`: In-place mutations (toggles, inline edits, popovers) without URL change; use `fetcher.formData` for optimistic UI and `fetcher.reset()` to clear fetcher state.
 
-Framework examples usually use the default `app/` directory, but check `react-router.config.ts` for a custom `appDirectory` before assuming exact paths.
+## 5. Navigation & URL State (All Modes)
+- Use `<Link>` or `<NavLink>` for internal links, `redirect()` inside loaders/actions, and `useNavigate()` only for imperative client events.
+- Treat `params` and `searchParams` as untrusted strings—parse and validate them, and preserve unrelated search params when updating filters.
 
-Then read `references/framework-mode.md`.
-
-### Data Mode
-
-Use Data Mode guidance when you see:
-
-- `createBrowserRouter`, `createHashRouter`, `createMemoryRouter`, or `createStaticRouter`
-- `<RouterProvider router={router}>`
-- route objects with properties like `path`, `children`, `loader`, `action`, `Component`, `ErrorBoundary`, or `lazy`
-- data APIs without the Framework Vite plugin
-
-Then read `references/data-mode.md`.
-
-### Declarative Mode
-
-Use Declarative Mode guidance when you see:
-
-- `<BrowserRouter>`, `<HashRouter>`, or `<MemoryRouter>`
-- `<Routes>` and `<Route>` JSX route configuration
-- route components passed with `element={<Component />}`
-- no data router, no route module convention, and no loaders/actions
-
-Then read `references/declarative-mode.md`.
-
-### RSC Framework and RSC Data Modes
-
-React Server Components support is unstable and exists in both Framework and Data variants. Use RSC guidance when you see:
-
-- `unstable_reactRouterRSC`
-- `@vitejs/plugin-rsc`
-- `unstable_RSCRouteConfig`
-- RSC entry files such as `entry.rsc`
-- `ServerComponent`, `ServerErrorBoundary`, `ServerLayout`, or `ServerHydrateFallback`
-- React directives or boundary packages such as `"use client"`, `"server-only"`, or `"client-only"`
-
-For RSC Framework, read both `references/framework-mode.md` and `references/rsc.md`.
-For RSC Data, read both `references/data-mode.md` and `references/rsc.md`.
-
-## Use Installed Docs as Source of Truth
-
-React Router ships markdown docs in the package so guidance can match the installed version:
-
-```txt
-node_modules/react-router/docs/
-```
-
-Key docs paths:
-
-```txt
-node_modules/react-router/docs/index.md
-node_modules/react-router/docs/start/
-node_modules/react-router/docs/how-to/
-node_modules/react-router/docs/explanation/
-node_modules/react-router/docs/upgrading/
-```
-
-When this skill references `react-router/docs/...`, read the matching file under `node_modules/react-router/docs/`. If the installed version does not include local docs, use the repo `docs/` directory when working inside the React Router repository; in a consuming app, fall back to version-matched website docs.
-
-Most docs include a mode marker near the top:
-
-```txt
-[MODES: framework, data, declarative]
-```
-
-Only apply a doc when its mode marker matches the app mode. If a task spans modes, prefer the section or file that matches the current app.
-
-RSC is documented primarily in:
-
-```txt
-node_modules/react-router/docs/how-to/react-server-components.md
-```
-
-## Skill References
-
-Load the relevant reference after identifying the mode:
-
-| Reference                        | Use When                                      |
-| -------------------------------- | --------------------------------------------- |
-| `references/framework-mode.md`   | Framework Mode or RSC Framework base behavior |
-| `references/data-mode.md`        | Data Mode or RSC Data base behavior           |
-| `references/declarative-mode.md` | Declarative Mode                              |
-| `references/rsc.md`              | Any unstable RSC app                          |
-
-## Mode Migration Doc Index
-
-If the user explicitly asks to switch modes, read the target mode reference plus the migration-relevant docs:
-
-| Migration                            | Docs to read                                                                                                                                                                                                                          |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Declarative → Data                   | `react-router/docs/start/modes.md`, `react-router/docs/start/data/routing.md`, `react-router/docs/start/data/data-loading.md`, `react-router/docs/start/data/actions.md`                                                              |
-| Declarative/Data → Framework         | `react-router/docs/start/modes.md`, `react-router/docs/start/framework/routing.md`, `react-router/docs/start/framework/route-module.md`, `react-router/docs/how-to/route-module-type-safety.md`                                       |
-| Framework SPA/SSR/pre-render changes | `react-router/docs/start/framework/rendering.md`, `react-router/docs/how-to/spa.md`, `react-router/docs/how-to/pre-rendering.md`, `react-router/docs/start/framework/data-loading.md`, `react-router/docs/start/framework/actions.md` |
-| Future flags/upgrades                | `react-router/docs/upgrading/future.md` and relevant files under `react-router/docs/upgrading/`                                                                                                                                       |
+## 6. Version-Matched Local Docs Fallback
+Only when working on unfamiliar edge cases (custom SSR `createStaticHandler`, RSC boundaries, middleware context, or version upgrades), inspect the installed package docs in `node_modules/react-router/docs/` (check the top `[MODES: ...]` marker before applying).
