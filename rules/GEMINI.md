@@ -28,15 +28,16 @@ Explicit user requirement: Route tasks to minimize quota/token cost and keep the
   - **Code Projects (`doubtless` / `shopify-ai-qa`):** Offload broad doc/spec scans to `research` (`flash`), do targeted coding in the main session, and reserve `pro` for multi-file architecture or security/App Proxy routes.
   - **Post-Reboot eGPU Reminder (`"remaind command"` / `"remind command"`):** When the user says `"remaind command"`, output and explain `cat /proc/cmdline && cat /sys/bus/pci/devices/0000:03:00.0/pp_dpm_pcie && journalctl -b 0 -k | grep -c "AER:"` (checks active GRUB `amdgpu` flags, RX 9060 XT PCIe link speed/DPM states, and `0` PCIe AER bus errors).
 
-## 3. Fundamental Code & Comment Principles (Always Enforce on Write/Update/Delete)
-- **Minimal Code & Small Chunks (KISS / YAGNI):** Write the fewest lines of code possible per task. Keep functions and logic chunks small, flat, and single-purpose. Never add speculative features, premature abstractions, or single-use wrappers.
+## 3. Fundamental Code & Comment Principles (Mandatory Baseline for All Code)
+**MANDATORY BASELINE:** Every time you write, update, refactor, or delete ANY code (React, TypeScript, backend, scripts) or comments, you MUST apply these rules as your foundation:
+- **Minimal Code & Small Chunks (KISS / YAGNI):** Write the fewest lines of code possible per task. Keep functions, components, and logic chunks small, flat, and single-purpose. Never add speculative features, premature abstractions, or single-use wrappers.
 - **Self-Explaining Names & Clean Code Mechanics:**
-  - *Names over comments:* Functions, variables, and types must clearly state their intent. Extract complex boolean conditions into intention-revealing variables or small helpers instead of commenting them.
-  - *Guard clauses over nesting:* Use early returns (`if (!isValid) return;`) to keep indentation flat (max 1–2 levels).
-  - *Small signatures & named constants:* Limit functions to 2–3 arguments (avoid boolean flag arguments; use an options object or separate functions). Replace magic numbers/strings with named constants.
+  - *Names over comments:* Functions, components, variables, and types must clearly state their intent (`is/has/can/should*` for booleans, `handle*` for handlers, `on*` for callback props). Extract complex conditions into intention-revealing variables or small helpers instead of commenting them.
+  - *Guard clauses over nesting:* Use early returns (`if (!isValid) return;` or `if (isLoading) return <Skeleton />;`) to keep indentation and JSX flat (max 1–2 levels; no nested ternaries).
+  - *Small signatures & named constants:* Limit functions to 2–3 arguments and components to focused props (avoid boolean flag props/arguments that split behavior; use separate functions/components or composition). Replace magic numbers/strings with named constants.
 - **Comments as a "Last Resort" Signal:**
   - Presence of a comment signals either a failure to write clear names/logic OR a non-obvious domain constraint/workaround (*why*, never *what*).
-  - Keep necessary comments to 1 short line. Never write narrator comments (`// loop through items`) or redundant JSDoc/boilerplate.
+  - Keep necessary comments to 1 short line. Never write narrator comments (`// loop through items`, `{/* render header */}`) or redundant JSDoc/boilerplate.
 - **Strict Comment-Code Lifecycle (Sync or Delete):**
   - Every time code is modified or deleted, inspect adjacent comments.
   - If the code change alters the logic, immediately **update** the comment or **delete** it if no longer valid or if the new code speaks for itself.
