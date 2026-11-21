@@ -1,39 +1,50 @@
 ---
 name: commit
-description: Generate Conventional Commit messages based on git diffs, task context, branch name, and feedback.
+description: Generate Conventional Commit messages based on git diffs, task context, and branch name. Use when asked to commit changes or write a commit message.
 ---
 
 # Commit Skill
 
-Use this skill whenever you need to generate a git commit message for code changes made in the workspace. It enforces Conventional Commit formatting, header length limits (<=80 chars), body bullet limits (<=60 chars), imperative mood, and context gathering protocols.
+Generate concise, accurate **Conventional Commits v1.0.0** messages with minimal tool calls.
 
----
+## 1. Single-Call Context Gathering
+Gather branch, status, and full diff in **one** shell command (never guess changes or run separate git commands):
+```bash
+git status -sb && git diff HEAD
+```
+- **Atomic Commits:** Group logically related changes; split unrelated changes into separate commits.
+- **Safety Check:** Never stage or commit `.env`, secrets, credentials, or private keys.
 
-## 📚 Reference Documentation Index
+## 2. Format & Strict Length Limits
+```text
+<type>(<scope>): <short summary>
 
-Before generating a commit message, consult the relevant topic guides:
+- <bullet 1 explaining what/why>
+- <bullet 2 explaining what/why>
 
-| Reference | Use When |
-| :--- | :--- |
-| [`references/conventional-commits.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/conventional-commits.md) | Checking strict formatting rules, header limits (<=80 chars), body bullet limits (<=60 chars), imperative mood, and breaking change syntax. |
-| [`references/context-gathering.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/context-gathering.md) | Executing the step-by-step protocol to inspect branch name, `git diff`, `git diff --cached`, untracked files, and conversation context. |
-| [`references/commit-types-and-examples.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/commit-types-and-examples.md) | Selecting the correct commit type (`feat`, `fix`, `docs`, `refactor`, `perf`, `test`, etc.) and reviewing real-world commit examples. |
-| [`references/sources.md`](file:///home/vitalii/projects/dotfiles-ai/my-custom-skills/skills/commit/references/sources.md) | Checking official Conventional Commits specifications, Angular commit guidelines, and Git documentation resources. |
+[BREAKING CHANGE: <description>]
+[Fixes #<issue>]
+```
 
----
+- **Header (`<type>(<scope>): <summary>`):**
+  - Max **80 characters**.
+  - **Imperative present tense** (`add`, `fix`, `update`, `remove`, not `added` or `adds`).
+  - Lowercase summary, **no trailing period**.
+- **Body (Optional for trivial 1-line changes):**
+  - Blank line after header.
+  - Bulleted list (`- `), max **60 characters per line**.
+  - Explain *what* and *why*, not *how*.
+- **Breaking Changes:** Append `!` after type/scope (`feat(api)!: ...`) or add a `BREAKING CHANGE:` footer.
 
-## 📌 Quick Rules Summary
-
-1. **Header Line**:
-   * Format: `<type>(<scope>): <short summary>`
-   * Length limit: Maximum **80 characters**.
-   * Mood: **Imperative** (e.g., `add`, `fix`, `update`, `remove`).
-   * Punctuation: **No period** at the end.
-
-2. **Body & Bullet Points**:
-   * Separate header from body with a blank line.
-   * Format: Bulleted list (`- `).
-   * **Strict Length Limit**: Each bullet line must NOT exceed **60 characters**.
-
-3. **Context Check**:
-   * Check `git branch --show-current`, `git diff`, and `git diff --cached` before writing the message. Do not guess code changes.
+## 3. Commit Types
+| Type | Use For | Example |
+| :--- | :--- | :--- |
+| `feat` | New feature or capability | `feat(auth): add OAuth2 login flow` |
+| `fix` | Bug fix | `fix(cart): prevent negative item quantity` |
+| `refactor` | Code restructuring without behavior change | `refactor(store): simplify user reducer` |
+| `perf` | Performance improvement | `perf(query): optimize orders SQL join` |
+| `test` | Adding or updating tests | `test(auth): add token validation unit tests` |
+| `docs` | Documentation only | `docs(readme): update install instructions` |
+| `build` / `ci` | Build system, dependencies, or CI workflows | `build(deps): upgrade React to v19` |
+| `chore` / `style` | Maintenance, config, or formatting | `chore(gitignore): ignore local dist folder` |
+| `revert` | Reverting a previous commit | `revert: revert commit 4a8b1c2` |
