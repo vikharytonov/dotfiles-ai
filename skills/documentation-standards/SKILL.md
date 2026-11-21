@@ -11,7 +11,7 @@ This skill translates **8 proven industrial & aerospace documentation frameworks
 
 ## 1. Model Routing by Documentation Task
 
-Always match the Gemini 4 model tier to the cognitive depth of the documentation task. **If the main session is on Argon or Neon and the task is a multi-step Reference/Syncing or Runbook update (>2 tool calls), automatically delegate it via `invoke_subagent(TypeName='self', Model='flash')` (or escalate ADRs/EARS specs via `Model='pro'` if the main session is on Hydrogen) with an explicit brief to load `documentation-standards` and run `verify-docs.sh`:**
+Match the Gemini 4 tier to task depth; WHEN a multi-step Reference/Syncing or Runbook task (>2 tool calls) runs on Argon or Neon, delegate via `invoke_subagent(TypeName='self', Model='flash')` (or escalate ADRs/EARS via `Model='pro'` from Hydrogen) with instructions to load `documentation-standards` and run `verify-docs.sh`:
 
 | Doc Category | Recommended Model | Why |
 | :--- | :--- | :--- |
@@ -23,19 +23,16 @@ Always match the Gemini 4 model tier to the cognitive depth of the documentation
 
 ## 2. The 6 Mechanical Writing Rules (ASD-STE100 + Horn's Information Mapping)
 
-Apply these strict rules to every line of Markdown:
+Apply these deterministic rules to every Markdown file:
 
-1. **BLUF (Bottom Line Up Front):** Place the executable command, summary table, or direct answer in the **first 3 lines** under every heading. Never bury commands below background history.
-2. **File & Section Size Caps (S1000D / Diátaxis Modularity):**
-   - Root `README.md`: **≤150 lines** (Gateway Sitemap only—never dump deep architecture or long tutorials in root `README.md`).
-   - Single-topic module (`docs/<topic>.md`): **≤250 lines**. If a file exceeds 250 lines, split it into focused data modules.
-   - Section intro under any `##` or `###` heading: **≤1 sentence** before transitioning to a table, bullet list, or code block.
-3. **Horn's Table Replacement Rule:** Whenever presenting **3 or more parallel items** (environment variables, CLI flags, config keys, roles, error codes, or `if/else` outcomes), you **MUST** use a Markdown table. Prose paragraphs are banned for structured facts.
-4. **ASD-STE100 Sentence Limits:**
-   - Instructional/procedural sentences: **≤20 words**, imperative active voice, **1 action per numbered step**.
-   - Explanatory/conceptual sentences: **≤25 words**, max **3 sentences per paragraph**.
-   - **One Word = One Meaning:** Use exact technical nouns (`repository`, `container`, `token`)—never swap synonyms for stylistic variety.
-5. **ASD-STE100 Banned Filler Dictionary:**
+| Rule | Mechanical Cap / Standard |
+| :--- | :--- |
+| **1. BLUF (Bottom Line Up Front)** | Put the command, table, or answer in the **first 3 lines** under every heading; never bury commands under history. |
+| **2. File & Section Caps (Diátaxis)** | Root `README.md` **≤150 lines** (sitemap only); topic modules `docs/<topic>.md` **≤250 lines** (1 intent); section intro **≤1 sentence**. |
+| **3. Horn's Table Rule** | **3+ parallel items** (env vars, CLI flags, config keys, roles, error codes, `if/else` outcomes) **MUST** use a Markdown table. |
+| **4. ASD-STE100 Limits** | Instructional **≤20 words** (imperative active voice, 1 action/step); explanatory **≤25 words** (max 3 sentences/paragraph); 1 term = 1 meaning. |
+| **5. Banned Filler Words** | Delete fluff and passive phrasing (see replacement table below). |
+| **6. Docs-as-Code (SSOT)** | Never duplicate TS interfaces, JSON schemas, or all `package.json` scripts; link to source files (`[schema.ts](../src/schema.ts)`). |
 
 | Never Write (Banned Fluff / Passive) | Always Write (STE100 Imperative / Active) |
 | :--- | :--- |
@@ -133,7 +130,7 @@ last_verified: YYYY-MM-DD
    ```bash
    ./scripts/rotate-keys.sh --promote && kubectl rollout status deploy/api
    ```
-   **Verify:** ` deployment "api" successfully rolled out` and error rate in logs remains `0`.
+   **Verify:** `deployment "api" successfully rolled out` and error rate in logs remains `0`.
 
 ## 3. Emergency Rollback (If Verification Fails)
 

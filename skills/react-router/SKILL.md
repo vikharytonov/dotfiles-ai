@@ -31,10 +31,12 @@ Never mix mode patterns unless migrating between modes.
 
 Rely on generated route types and isolate server-only dependencies.
 
-- **Route Types (`typegen`):** Import `import type { Route } from "./+types/<route>";` for `LoaderArgs`, `ActionArgs`, `ComponentProps`, `MetaArgs`, and `MiddlewareFunction`. Never edit `.react-router/types`.
-- **Route Component Props:** Read `loaderData`, `actionData`, `params`, and `matches` from `Route.ComponentProps`; `meta` MUST read `{ loaderData }` instead of deprecated `data`.
-- **Server/Client Isolation:** Keep Node, DB, and secret logic in `.server.ts` modules called only from `loader`, `action`, or server `middleware`.
-- **v7.9–v7.18+ Features:** Support `future.v8_middleware`, `future.v8_splitRouteModules`, `future.v8_viteEnvironmentApi`, and `fetcher.reset()` when enabled in `react-router.config.ts`.
+| Area | Standard (`MUST` / `MUST NOT`) |
+| :--- | :--- |
+| **Route Types (`typegen`)** | Import `import type { Route } from "./+types/<route>";` for `LoaderArgs`, `ActionArgs`, `ComponentProps`, `MetaArgs`, and `MiddlewareFunction`; `MUST NOT` edit `.react-router/types`. |
+| **Route Component Props** | Read `loaderData`, `actionData`, `params`, and `matches` from `Route.ComponentProps`; `meta` `MUST` read `{ loaderData }` instead of deprecated `data`. |
+| **Server/Client Isolation** | Keep Node, DB, and secret logic in `.server.ts` modules called only from `loader`, `action`, or server `middleware`. |
+| **v7.9–v7.18+ Features** | Support `future.v8_middleware`, `future.v8_splitRouteModules`, `future.v8_viteEnvironmentApi`, and `fetcher.reset()` when enabled in `react-router.config.ts`. |
 
 ## 4. Loaders, Actions, Forms & Fetchers
 

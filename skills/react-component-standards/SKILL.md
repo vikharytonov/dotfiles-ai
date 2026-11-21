@@ -55,11 +55,13 @@ Keep state minimal, immutable, and colocated at the lowest common ancestor.
 
 Keep the render phase pure and defer heavy UI via lazy boundaries.
 
-- **Pure Render:** Render MUST be a pure function of props, state, and context with zero external mutations or side-effects.
-- **Stable List Keys:** Lists MUST use stable entity IDs (`key={item.id}`); never use `Math.random()` or array indices for dynamic lists.
-- **Pragmatic Memoization:** Reserve `useMemo` and `useCallback` for heavy computations, hook dependencies, or `React.memo` child props (unless React Compiler handles memoization).
-- **Mutable Refs:** Use `useRef<ReturnType<typeof setInterval> | null>(null)` or DOM refs for mutable values that must not trigger re-renders.
-- **Code Splitting:** Wrap heavy non-critical UI (charts, rich editors, modals) in `React.lazy` with `<Suspense fallback={...}>`.
+| Area | Rule (`MUST` / `SHOULD`) |
+| :--- | :--- |
+| **Pure Render** | Render `MUST` be a pure function of props, state, and context with zero external mutations or side-effects. |
+| **Stable List Keys** | Lists `MUST` use stable entity IDs (`key={item.id}`); never use `Math.random()` or array indices for dynamic lists. |
+| **Pragmatic Memoization** | Reserve `useMemo` and `useCallback` for heavy computations, hook deps, or `React.memo` child props (unless React Compiler handles memoization). |
+| **Mutable Refs** | Use `useRef<ReturnType<typeof setInterval> \| null>(null)` or DOM refs for mutable values that must not trigger re-renders. |
+| **Code Splitting** | Wrap heavy non-critical UI (charts, rich editors, modals) in `React.lazy` with `<Suspense fallback={...}>`. |
 
 ## 5. Component API Design & Accessibility (WCAG / ARIA)
 

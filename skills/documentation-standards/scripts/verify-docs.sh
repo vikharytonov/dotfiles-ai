@@ -19,8 +19,8 @@ while IFS= read -r -d '' file; do
     WARNINGS=$((WARNINGS + 1))
   fi
 
-  # Strip fenced code blocks and inline backticks for prose/link checks so examples don't false-positive
-  prose_only=$(awk '/^```/{flag=!flag; next} !flag' "$file" | sed -E 's/`[^`]*`//g')
+  # Replace fenced code block contents with blank lines to preserve exact file line numbers, and strip inline backticks
+  prose_only=$(awk '/^[[:space:]]*```/{flag=!flag; print ""; next} flag{print ""; next} {print}' "$file" | sed -E 's/`[^`]*`//g')
 
   # 2. Check for banned ASD-STE100 filler phrases in non-code prose
   if echo "$prose_only" | grep -niE '\b(simply|easily|basically|obviously|in order to|please note|it should be noted)\b' >/dev/null 2>&1; then
@@ -33,6 +33,7 @@ while IFS= read -r -d '' file; do
   dir=$(dirname "$file")
   while IFS= read -r link; do
     clean_link="${link%%#*}"
+    clean_link="${clean_link%% *}"
     [[ -z "$clean_link" || "$clean_link" =~ ^(https?|mailto|file|conversation):// ]] && continue
     if [[ ! -e "$dir/$clean_link" ]]; then
       echo "  [WARN] $file: Broken relative link -> '$link'"
