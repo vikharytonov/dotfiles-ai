@@ -43,3 +43,15 @@ Apply these mechanical rules whenever creating, updating, or reviewing Markdown;
 | **EARS + RFC 2119 Specs** | Write requirements/PRDs/ACs with uppercase `MUST`/`MUST NOT`: Ubiquitous (`The <system> MUST...`), Event (`WHEN <trigger>...`), State (`WHILE <state>...`), Error (`IF <condition>, THEN...`), Optional (`WHERE <feature>...`). |
 | **C4, ADRs & QRH** | Express architecture via C4 `mermaid` diagrams and 1-page ADRs (`docs/adr/NNNN-slug.md`: `Status -> Context -> Decision -> Consequences`); pair runbook steps with `Action Command -> Expected Verification Output` and `Rollback`. |
 | **Docs-as-Code & Models** | `MUST NOT` duplicate code, types, or `package.json` in prose; sync or delete affected docs in the same turn. Route: `gemini-4-hydrogen-medium`/`high` (README/table/changelog sync), `gemini-4-neon-medium` (QRH/modularization), `gemini-4-argon-medium`/`high` (EARS/C4/ADRs). |
+
+## 5. Testing & Verification Principles (Clean Code Ch. 9 + Khorikov + Dodds + EARS)
+Apply these mandatory rules whenever writing, updating, or running tests; `IF` designing a test suite, fixing a bug, or writing >2 tests, `THEN` read `testing-standards` first.
+
+| Principle | Mandatory Rule (`MUST` / `MUST NOT`) |
+| :--- | :--- |
+| **Red-Green & F.I.R.S.T.** | `WHEN` fixing a bug or adding domain logic, `MUST` write/run a failing test (`Red`) before production code (`Green`). All tests `MUST` be **F**ast, **I**ndependent (zero shared mutable state), **R**epeatable (offline/deterministic), **S**elf-Validating, and **T**imely. |
+| **Clean Tests (AAA & DAMP)** | Structure tests as flat **Build–Operate–Check (AAA)** separated by blank lines (**`MUST NOT` write `// Arrange`, `// Act`, `// Assert` narrator comments**); enforce 1 behavioral concept per test, **DAMP** self-contained setup, and **zero control-flow logic (`if/else`, `for`, `try/catch`)** inside test bodies. |
+| **Behavior Over Implementation** | Assert on observable outcomes (return value, public state change, or external boundary call); `MUST NOT` assert on private helpers, internal hook state, or internal function call counts. |
+| **Mock Only External Boundaries** | Prefer `Real Implementation > In-Memory Fake > Stub > Mock`. `MUST` mock only unmanaged out-of-process boundaries (3rd-party HTTP/OAuth/Stripe APIs, clock, randomness); `MUST NOT` mock internal modules or pure helpers. |
+| **EARS, BVA & UI Locators** | Map every EARS spec clause (`WHEN`/`WHILE`/`IF-THEN`) 1:1 to a test case plus **Boundary Value Analysis** (`min-1, min, max, max+1, empty/null`). UI/E2E tests `MUST` query by accessibility semantics first (`getByRole` > `getByLabelText` > `getByText` > `getByTestId`; `MUST NOT` query by CSS class). |
+| **Anti-Cheating & Model Routing** | `MUST NOT` use `.skip`, `.only`, delete assertions, add `@ts-ignore`/`eslint-disable`, or lower coverage thresholds to pass CI. Route: `Model='flash'` (`test-engineer` / `self`) for >2-step unit test generation & runner loops; `Neon` for integration/component tests; `Argon` (`Model='pro'`) for security, concurrency, and test architecture. |
