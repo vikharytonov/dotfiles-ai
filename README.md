@@ -13,9 +13,7 @@ dotfiles-ai/
     ├── commit/                  # Conventional commit generator
     ├── react-component-standards/
     ├── react-router/
-    ├── selfcare-coach/
-    ├── session-manager/
-    └── wow-linux-setup/
+    └── session-manager/
 ```
 
 ---
