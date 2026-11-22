@@ -10,7 +10,7 @@ Install the full bundle locally or via the native Antigravity plugin CLI.
    ```bash
    git clone https://github.com/vikharytonov/dotfiles-ai.git ~/projects/dotfiles-ai && ~/projects/dotfiles-ai/setup.sh
    ```
-   **Verify:** Output ends with `=== Setup completed successfully! ===` and `readlink ~/.gemini/GEMINI.md` resolves to `rules/GEMINI.md`.
+   **Verify:** Output ends with `=== Setup completed successfully! ===` and `readlink ~/.gemini/config/plugins/dotfiles-ai` resolves to `~/projects/dotfiles-ai`.
 2. Or install natively with the Antigravity plugin CLI ([plugin.json](plugin.json)):
    ```bash
    agy plugin install https://github.com/vikharytonov/dotfiles-ai
@@ -23,9 +23,9 @@ Run [setup.sh](setup.sh) flags to install or remove individual rules and skills 
 
 | Command | Action | Target Paths |
 | :--- | :--- | :--- |
-| `./setup.sh` | Install plugin, rules, all skills, and `agent-skills` | `~/.gemini/{GEMINI.md,AGENTS.md,config/plugins,config/skills,antigravity-cli/skills}` |
+| `./setup.sh` | Install plugin (includes `GEMINI.md`), all skills, and `agent-skills` | `~/.gemini/{config/plugins,config/skills,antigravity-cli/skills}` |
 | `./setup.sh --list` | List available skills in `skills/` | `stdout` |
-| `./setup.sh --rules` | Link global rules (`GEMINI.md` and `AGENTS.md`) | `~/.gemini/GEMINI.md`, `~/.gemini/AGENTS.md` |
+| `./setup.sh --rules` | Link standalone global rules for non-plugin tools | `~/.gemini/GEMINI.md`, `~/.gemini/AGENTS.md` |
 | `./setup.sh --skill <name>` | Symlink a single skill by directory name | `~/.gemini/{config,antigravity-cli}/skills/<name>` |
 | `./setup.sh --remove-skill <name>` | Remove a single installed skill symlink | `~/.gemini/{config,antigravity-cli}/skills/<name>` |
 

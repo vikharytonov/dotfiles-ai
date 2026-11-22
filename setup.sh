@@ -14,9 +14,9 @@ mkdir -p ~/.gemini/config/skills
 
 usage() {
   echo -e "${BLUE}Usage:${NC}"
-  echo "  ./setup.sh                      # Install everything (rules + all skills + agent-skills)"
+  echo "  ./setup.sh                      # Install everything (plugin + all skills + agent-skills)"
   echo "  ./setup.sh --list               # List available skills in dotfiles-ai"
-  echo "  ./setup.sh --rules              # Install/update only global rules (GEMINI.md & AGENTS.md)"
+  echo "  ./setup.sh --rules              # Link standalone global rules (GEMINI.md & AGENTS.md) for non-plugin tools"
   echo "  ./setup.sh --skill <name>        # Install/update a single skill by name"
   echo "  ./setup.sh --remove-skill <name> # Remove a single installed skill by name"
 }
@@ -93,13 +93,19 @@ echo -e "${BLUE}=== Setting up Dotfiles-AI (Rules & Skills) ===${NC}"
 # Clean up legacy my-custom-skills symlink if present
 rm -rf "$HOME/.gemini/config/plugins/my-custom-skills"
 
-# Link root dotfiles-ai plugin
+# Link root dotfiles-ai plugin (provides rules/GEMINI.md without user_global duplication)
 DEST_PLUGIN="$HOME/.gemini/config/plugins/dotfiles-ai"
 rm -rf "$DEST_PLUGIN"
 ln -s "$DOTFILES_DIR" "$DEST_PLUGIN"
 echo -e "  ${GREEN}✓${NC} Linked plugin: dotfiles-ai"
 
-link_rules
+# Remove duplicate top-level rule symlinks when managed by the plugin
+for DUP_RULE in "$HOME/.gemini/GEMINI.md" "$HOME/.gemini/AGENTS.md"; do
+  if [ -L "$DUP_RULE" ] && [ "$(readlink "$DUP_RULE")" = "$DOTFILES_DIR/rules/GEMINI.md" ]; then
+    rm -f "$DUP_RULE"
+    echo -e "  ${GREEN}✓${NC} Removed duplicate rule symlink: $(basename "$DUP_RULE")"
+  fi
+done
 
 echo -e "\n${BLUE}Installing all skills:${NC}"
 for SKILL_DIR in "$DOTFILES_DIR/skills/"*/; do
