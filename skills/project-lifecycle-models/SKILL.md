@@ -41,9 +41,9 @@ Ground every project in this 8-phase lifecycle synthesized from **Boehm's Spiral
 
 | Transition | Mandatory Exit Gate (`MUST` / `MUST NOT`) |
 | :--- | :--- |
-| **Phase 1 -> 2/3** | `MUST NOT` begin architecture or technical spikes until problem statement, target user, and V1 EARS requirements exist. |
+| **Phase 1 -> 2/3** | `MUST NOT` begin architecture or technical spikes until problem statement, target user, V1 EARS requirements, and initial `PROGRESS.md` exist. |
 | **Phase 2 -> 3** | `MUST` isolate or discard throwaway spike code in `spikes/` or a scratch branch before writing production modules. |
-| **Phase 3 -> 4/5** | `MUST` record core stack, data, and auth decisions in ADRs and ratify `CONSTRAINTS.md` before Phase 5 MVP delivery. |
+| **Phase 3 -> 4/5** | `MUST` record core stack, data, and auth decisions in ADRs, complete the Phase 4 Walking Skeleton checklist, and ratify `CONSTRAINTS.md` before Phase 5 MVP delivery. |
 | **Phase 5 -> 6** | `MUST` pass CI quality gates, security/a11y/perf audits, and a tested rollback runbook before production launch. |
 
 ## 4. Phase Task-to-Model & Skill Routing
@@ -70,3 +70,30 @@ Ground every project in this 8-phase lifecycle synthesized from **Boehm's Spiral
 | **7. Operations** | Changelogs, commits & doc sync | `gemini-4-hydrogen-low` or `medium` |
 | **8. Scale** | Bottleneck profiling & zero-downtime migration plan | `gemini-4-argon-high` |
 | **8. Scale** | Codebase-wide refactoring & dead-code removal | `gemini-pro-orchestrator-g1-pro` (Argon) |
+
+## 5. Session Continuity (`PROGRESS.md` Contract)
+
+`WHEN` initializing a project, exiting a phase, or checkpointing before `/compact`, create or update `PROGRESS.md` (≤40 lines) at the repo root:
+
+```markdown
+# Project Progress
+
+- **Phase:** <1–8> — <Phase Name>
+- **Active Slice:** <Current feature, ADR, or milestone>
+- **Last Verified:** `<short-sha>` — `<check command>` passed (`YYYY-MM-DD`)
+- **Open Decisions / Blockers:** <None | bullet list>
+- **Next Action:** <Exact next command or slice>
+```
+
+## 6. Phase 4 Walking Skeleton & Repo Bootstrap Checklist
+
+Complete every applicable baseline before starting Phase 5 vertical slices:
+
+| Area | Mandatory Baseline (`MUST`) |
+| :--- | :--- |
+| **Config & Secrets** | Commit `.env.example`, ignore `.env*` in `.gitignore`, and validate required env vars at startup. |
+| **Quality Gate Script** | Expose one command (e.g., `npm run check`) running strict typecheck (`strict: true` / `pyright`), lint, and tests; wire CI and pre-commit hooks. |
+| **Runtime Baseline** | Expose `/healthz` and `/readyz` endpoints, structured JSON logging, and graceful `SIGTERM` shutdown. |
+| **Local Data & Deps** | Provide reproducible local DB setup (e.g., `docker-compose` or embedded), deterministic seed script, and committed lockfile. |
+| **Design Tokens (UI)** | Define semantic color, spacing, and typography tokens before building feature pages. |
+| **Governance** | Ratify `CONSTRAINTS.md`, initialize `PROGRESS.md`, and verify the skeleton builds and passes CI green. |
