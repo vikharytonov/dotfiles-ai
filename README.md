@@ -63,3 +63,5 @@ Core rules and modular skills organized by Diátaxis type and Gemini 4 execution
 | **React Router (v7+)** | Reference | Tier 2 (Neon) | [skills/react-router/SKILL.md](skills/react-router/SKILL.md) | React Router v7+ modes, `loader`/`action`, fetchers, and typegen |
 | **Testing Standards** | Reference / How-To | Tier 1–3 (Test-scoped) | [skills/testing-standards/SKILL.md](skills/testing-standards/SKILL.md) | EARS-to-Test mapping, 6-point BVA, WCAG locators, clean blueprints & diff gate |
 | **Pre-Commit Gate Template** | How-To | Per-Repo Hook | [templates/pre-commit](templates/pre-commit) | Deterministic secret scan, zero bar-lowering diff gate, and `verify-docs.sh` hook |
+| **Constraints Template** | Reference | Phase 4 / Audit | [templates/CONSTRAINTS.md](templates/CONSTRAINTS.md) | Starter quality-bar contract (EARS invariants, verification commands, budgets) |
+| **Progress Template** | Reference | Session State | [templates/PROGRESS.md](templates/PROGRESS.md) | Starter ≤40-line session continuity log for phase gates and `/compact` |
