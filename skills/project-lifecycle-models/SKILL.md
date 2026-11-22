@@ -37,6 +37,15 @@ Ground every project in this 8-phase lifecycle synthesized from **Boehm's Spiral
 | **7. Operations & Support** | Google SRE blameless post-mortems, ITIL triage, Kanban flow | Root-cause fixes, regression tests, post-MVP enhancements, synced documentation |
 | **8. Scale, Refactoring & Deprecation** | *Expand-Contract* migrations (Fowler/Sadalage), CWV & profiling | N+1 fixes, caching layers, zero-downtime DB migrations, legacy deprecation |
 
+### Phase-Transition Exit Gates (DoR / DoD)
+
+| Transition | Mandatory Exit Gate (`MUST` / `MUST NOT`) |
+| :--- | :--- |
+| **Phase 1 -> 2/3** | `MUST NOT` begin architecture or technical spikes until problem statement, target user, and V1 EARS requirements exist. |
+| **Phase 2 -> 3** | `MUST` isolate or discard throwaway spike code in `spikes/` or a scratch branch before writing production modules. |
+| **Phase 3 -> 4/5** | `MUST` record core stack, data, and auth decisions in ADRs and ratify `CONSTRAINTS.md` before Phase 5 MVP delivery. |
+| **Phase 5 -> 6** | `MUST` pass CI quality gates, security/a11y/perf audits, and a tested rollback runbook before production launch. |
+
 ## 4. Phase Task-to-Model & Skill Routing
 
 | Phase | Task Scope | Recommended Model & Pairing |

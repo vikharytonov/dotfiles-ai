@@ -60,3 +60,13 @@ Map domain errors consistently to RFC 9457-style machine-readable HTTP responses
 | **Unexpected / Internal** | `500` | Return generic message + `requestId`; `MUST NOT` expose stack traces or SQL errors |
 
 - **Structured Logs:** Emit JSON logs with `requestId`, operation, latency, and error code; `MUST` redact passwords, tokens, API keys, and sensitive PII.
+
+## 6. Migrations, Seeds & Runtime Hygiene
+
+Keep schema evolution reversible, local data repeatable, and runtime dependencies audited.
+
+| Area | Mandatory Standard (`MUST` / `MUST NOT`) |
+| :--- | :--- |
+| **Schema Migrations** | Schema changes `MUST` use versioned, reversible migrations; destructive DDL (`DROP COLUMN`, type narrowing) `MUST` follow expand-contract. |
+| **Deterministic Seeds** | Local dev and test seed scripts `MUST` be idempotent and deterministic across repeated runs. |
+| **Supply Chain & Containers** | Commit lockfiles, run dependency vulnerability audits (`npm audit` / `pip-audit`) before launch, and run containers as non-root using multi-stage builds. |
