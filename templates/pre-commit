@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Reusable per-repo pre-commit quality gate (human + AI commits).
+# Install: cp ~/projects/dotfiles-ai/templates/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+FAILED=0
+
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+if [ -z "$staged_files" ]; then
+  exit 0
+fi
+
+# 1. Secret & .env Hygiene Gate
+env_files="$(printf '%s\n' "$staged_files" | grep -E '(^|/)\.env(\..+)?$' | grep -Ev '\.(example|sample|template)$' || true)"
+if [ -n "$env_files" ]; then
+  echo -e "${RED}[BLOCK] Staged .env file detected:${NC}"
+  printf '%s\n' "$env_files"
+  FAILED=1
+fi
+
+secret_hits="$(git diff --cached -U0 -- . ':(exclude)*.md' | grep -E '^\+.*(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|sk_live_[A-Za-z0-9]+|xox[baprs]-[A-Za-z0-9-]+)' || true)"
+if [ -n "$secret_hits" ]; then
+  echo -e "${RED}[BLOCK] Potential hardcoded secret detected in staged diff:${NC}"
+  printf '%s\n' "$secret_hits"
+  FAILED=1
+fi
+
+# 2. Zero Bar-Lowering Diff Gate (testing-standards §4)
+bar_lowering_hits="$(git diff --cached -U0 -- . ':(exclude)*.md' ':(exclude)*pre-commit*' | grep -E '^\+.*(\.skip\(|\.only\(|@ts-ignore|eslint-disable)' || true)"
+if [ -n "$bar_lowering_hits" ]; then
+  echo -e "${RED}[BLOCK] Bar-lowering suppression or skipped test detected:${NC}"
+  printf '%s\n' "$bar_lowering_hits"
+  FAILED=1
+fi
+
+# 3. Dual-Audience Docs Gate (documentation-standards)
+VERIFY_DOCS="$HOME/.gemini/antigravity-cli/skills/documentation-standards/scripts/verify-docs.sh"
+staged_md="$(printf '%s\n' "$staged_files" | grep -E '\.md$' || true)"
+if [ -n "$staged_md" ] && [ -x "$VERIFY_DOCS" ]; then
+  while IFS= read -r md_file; do
+    [ -f "$md_file" ] && "$VERIFY_DOCS" "$md_file" || FAILED=1
+  done <<< "$staged_md"
+fi
+
+if [ "$FAILED" -ne 0 ]; then
+  echo -e "${RED}Pre-commit quality gates failed. Fix issues before committing.${NC}"
+  exit 1
+fi
+
+echo -e "${GREEN}[OK] Pre-commit quality gates passed.${NC}"

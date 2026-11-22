@@ -54,10 +54,12 @@ Core rules and modular skills organized by Diátaxis type and Gemini 4 execution
 
 | Module | Type | Tier | Path | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| **Global Rules** | Reference | All Tiers (Baseline) | [rules/GEMINI.md](rules/GEMINI.md) | Token efficiency, model routing, Clean Code, and doc standards |
+| **Global Rules** | Reference | All Tiers (Baseline) | [rules/GEMINI.md](rules/GEMINI.md) | Token efficiency, model routing, Clean Code, docs, testing, and safety baseline |
+| **Backend & Data Standards** | Reference | Tier 2–3 (Neon/Argon) | [skills/backend-data-standards/SKILL.md](skills/backend-data-standards/SKILL.md) | Stack-agnostic boundary validation, transactions, idempotency, and error taxonomy |
 | **Commit** | How-To | Tier 0–1 (Hydrogen) | [skills/commit/SKILL.md](skills/commit/SKILL.md) | Conventional Commits v1.0.0 generator with Doc-Drift Gate |
 | **Documentation Standards** | Reference / How-To | Tier 1–3 (Doc-scoped) | [skills/documentation-standards/SKILL.md](skills/documentation-standards/SKILL.md) | Dual-Audience (STE100, Diátaxis, EARS, C4, QRH) rules and validator |
 | **Project Lifecycle Models** | Explanation | Tier 2–3 (Phase gates) | [skills/project-lifecycle-models/SKILL.md](skills/project-lifecycle-models/SKILL.md) | 8-phase SDLC framework and Gemini 4 model selection |
 | **React Component Standards** | Reference | Tier 2 (Neon) | [skills/react-component-standards/SKILL.md](skills/react-component-standards/SKILL.md) | React Clean Code, derived state, effect hygiene, and WCAG rules |
 | **React Router (v7+)** | Reference | Tier 2 (Neon) | [skills/react-router/SKILL.md](skills/react-router/SKILL.md) | React Router v7+ modes, `loader`/`action`, fetchers, and typegen |
 | **Testing Standards** | Reference / How-To | Tier 1–3 (Test-scoped) | [skills/testing-standards/SKILL.md](skills/testing-standards/SKILL.md) | EARS-to-Test mapping, 6-point BVA, WCAG locators, clean blueprints & diff gate |
+| **Pre-Commit Gate Template** | How-To | Per-Repo Hook | [templates/pre-commit](templates/pre-commit) | Deterministic secret scan, zero bar-lowering diff gate, and `verify-docs.sh` hook |
