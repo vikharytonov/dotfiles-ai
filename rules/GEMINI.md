@@ -11,16 +11,18 @@ Apply these mandatory rules to every chat response and tool invocation to minimi
 | **ASD-STE100 Chat Style** | Use active voice and ≤25 words per sentence; `MUST NOT` use filler words (`simply`, `easily`, `basically`, `just`, `please note`, `in order to`). |
 | **Targeted Reads & Edits** | Read only needed line ranges (`StartLine`/`EndLine`) or `grep_search`; batch independent tool calls and shell checks; output targeted diffs; recommend `/compact` when context grows long. |
 | **Code Review Format** | `WHEN` outputting a code review, `MUST` start on line 1 with `**Verdict: <Approve \| Request changes>**` followed immediately by a 1-line summary, omitting any `Review:` title header. |
+| **Skill Precedence** | Custom skills in `~/.gemini/antigravity-cli/skills/` `MUST` override overlapping plugin skills (e.g., `documentation-standards` over `documentation-and-adrs`). |
+| **Project Context** | Read repository `CONSTRAINTS.md` (if present) before planning or editing; `MUST NOT` violate project invariants. |
 
 ## 2. Automatic Model-per-Task & Subagent Routing
-Route tasks to minimize quota/token cost and keep the main context small. The agent `MUST NOT` spawn a subagent for trivial 1–2 tool call tasks where direct execution uses fewer tokens.
+Route tasks to minimize quota/token cost and keep the main context small. The agent `MUST NOT` spawn a subagent for trivial 1–2 turn tasks where direct batched execution uses fewer tokens.
 
 | Tier & Models | Scope | Execution & Subagent Action |
 | :--- | :--- | :--- |
-| **Tier 0: Micro** (`gemini-4-hydrogen-medium`/`high`) | 1-file surgical edits, quick bash/git checks, direct Q&A (≤2 tool calls) | Execute directly in main session (zero subagent overhead) regardless of active model. |
-| **Tier 1: Fast Offload** (`Model='flash'` or `'flash_lite'`) | Broad searches (`>4` files), doc/web lookups (`research`), large log/transcript parsing (`flash_lite`), unit tests (`test-engineer`), lint/type loops, bulk Kanban tickets, README/table/changelog sync (`self`) | **Auto-delegate (>2 tool calls):** Spawn `invoke_subagent(..., Model='flash')` with clear brief and rule/skill pointers; require a 2–4 bullet summary back. |
+| **Tier 0: Micro** (`gemini-4-hydrogen-medium`/`high`) | 1-file surgical edits, quick bash/git checks, direct Q&A (≤2 sequential turns) | Execute directly in main session (zero subagent overhead) regardless of active model. |
+| **Tier 1: Fast Offload** (`Model='flash'` or `'flash_lite'`) | Broad searches (`>4` files), doc/web lookups (`research`), large log/transcript parsing (`flash_lite`), unit tests (`test-engineer`), lint/type loops, bulk Kanban tickets, README/table/changelog sync (`self`) | **Auto-delegate (>2 sequential turns or >4 files / noisy test-lint loops):** Spawn `invoke_subagent(..., Model='flash')` with clear brief and rule/skill pointers; require a 2–4 bullet summary back. |
 | **Tier 2: Standard** (`gemini-4-neon-medium`/`high`, `gemini-pro-orchestrator-neon`) | PoC spikes, Walking Skeleton (CI/CD, test harness, `CONSTRAINTS.md`), QRH runbooks, 1–3 file MVP features, UI components, CRUD routes, moderate regressions | On **Neon/Orchestrator**: execute directly (or fan out parallel `self` slices). On **Argon**: plan in 2–3 bullets and offload boilerplate/test loops to `self` (`Model='flash'`). |
-| **Tier 3: Frontier** (`gemini-4-argon-medium`/`high`, `gemini-pro-orchestrator-argon`, `Model='pro'`) | PRD/EARS specs (`Argon medium`), architecture/C4/ADRs/threat modeling (`Argon high`), multi-file MVP slices (`Orchestrator`), critical auth/payment/HMAC/crypto, PRR, profiling/N+1/races, zero-downtime DB migrations | On **Argon**: execute core reasoning/security directly and offload repetitive file/test steps to `Model='flash'`. On **Hydrogen/Neon**: auto-escalate via `invoke_subagent(TypeName='self'\|'security-auditor'\|'code-reviewer', Model='pro')`. |
+| **Tier 3: Frontier** (`gemini-4-argon-medium`/`high`, `gemini-pro-orchestrator-g1-pro`, `Model='pro'`) | PRD/EARS specs (`Argon medium`), architecture/C4/ADRs/threat modeling (`Argon high`), multi-file MVP slices (`Orchestrator`), critical auth/payment/HMAC/crypto, PRR, profiling/N+1/races, zero-downtime DB migrations | On **Argon**: execute core reasoning/security directly and offload repetitive file/test steps to `Model='flash'`. On **Hydrogen/Neon**: auto-escalate via `invoke_subagent(TypeName='self'\|'security-auditor'\|'code-reviewer', Model='pro')`. |
 
 - **Subagent Brief Contract:** `WHEN` spawning any subagent, the brief `MUST` state: (1) exact files/scope owned, (2) skill or `GEMINI.md` section to apply (e.g., *"Follow GEMINI.md Section 3 Clean Code"* or *"Load `documentation-standards` skill"*), (3) verification command, and (4) *"Return a 2–4 bullet summary only."*
 - **Model Switch Hint:** The agent `MUST` suggest a manual `/model` switch (1 short line) ONLY when shifting an entire project phase for a multi-turn session (load `project-lifecycle-models` at transitions).
@@ -37,6 +39,7 @@ Apply these mandatory rules whenever writing, updating, refactoring, or deleting
 | **Comments as Last Resort** | Comment only non-obvious domain *why* (never *what*), max 1 short line; `MUST NOT` write narrator comments (`// loop through items`, `{/* render header */}`) or redundant JSDoc/boilerplate. |
 | **Comment-Code Lifecycle** | `WHEN` modifying or deleting code, inspect adjacent comments and immediately update or delete stale or redundant ones. |
 | **Surgical Edits** | Produce the smallest diff touching only task lines; `MUST NOT` reformat, rename, or refactor unrelated adjacent code; delete only dead imports, variables, or comments your edit rendered obsolete. |
+| **Dependency Hygiene** | Inspect the project manifest (`package.json`, `pyproject.toml`) before adding packages; prefer stdlib or existing deps and verify installed versions. |
 
 ## 4. Documentation Principles (Dual-Audience: Human + AI)
 Apply these mechanical rules whenever creating, updating, or reviewing Markdown; `IF` writing a new doc, spec, ADR, runbook, or >30 lines of Markdown, `THEN` read `documentation-standards` first.
@@ -61,3 +64,14 @@ Apply these mandatory rules whenever writing, updating, or running tests; `IF` d
 | **Mock Only External Boundaries** | Prefer `Real Implementation > In-Memory Fake > Stub > Mock`. `MUST` mock only unmanaged out-of-process boundaries (3rd-party HTTP/OAuth/Stripe APIs, clock, randomness); `MUST NOT` mock internal modules or pure helpers. |
 | **EARS, BVA & UI Locators** | Map every EARS spec clause (`WHEN`/`WHILE`/`IF-THEN`) 1:1 to a test case plus **Boundary Value Analysis** (`min-1, min, max, max+1, empty/null`). UI/E2E tests `MUST` query by accessibility semantics first (`getByRole` > `getByLabelText` > `getByText` > `getByTestId`; `MUST NOT` query by CSS class). |
 | **Anti-Cheating & Model Routing** | `MUST NOT` use `.skip`, `.only`, delete assertions, add `@ts-ignore`/`eslint-disable`, or lower coverage thresholds to pass CI. Route: `Model='flash'` (`test-engineer` / `self`) for >2-step unit test generation & runner loops; `Neon` for integration/component tests; `Argon` (`Model='pro'`) for security, concurrency, and test architecture. |
+| **End-of-Task Gate** | `WHEN` finishing any code edit, `MUST` run project typecheck, lint, and affected tests and report observed exit output; `MUST NOT` claim green results without executing checks. |
+
+## 6. Safety, Security & Anti-Looping Baseline
+Apply these mandatory guardrails to every edit and command, even when `security-and-hardening` is not loaded.
+
+| Guardrail | Mandatory Rule (`MUST` / `MUST NOT`) |
+| :--- | :--- |
+| **Input & Query Safety** | Validate untrusted inputs at every boundary (HTTP, CLI, URL, webhooks); `MUST` use parameterized queries and safe output encoding (no SQL/shell string interpolation or unescaped HTML). |
+| **Secret Hygiene** | `MUST NOT` hardcode, log, stage, or commit secrets, tokens, private keys, or `.env` files. |
+| **Destructive Operations** | `WHEN` a task requires destructive git, database, or file operations (`git reset --hard`, force-push, `DROP TABLE`, `rm -rf`), `MUST` request explicit user confirmation first. |
+| **Anti-Looping Escalation** | `IF` 2–3 fix attempts fail on the same root cause, `THEN` `MUST` stop retrying, report observed evidence, and escalate to the user instead of guessing or weakening specs. |
