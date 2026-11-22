@@ -12,6 +12,7 @@ Ground every project in this 8-phase lifecycle synthesized from **Boehm's Spiral
 - `WHEN` transitioning between project phases, the agent `MUST` tell the user which **Gemini 4 model** (`agy --model <id>` or `/model`) fits the upcoming phase.
 - `WHILE` running on a heavier model (e.g., Argon), `WHEN` a sub-task is a lighter tier (`>2` tool calls of research, unit tests, lint fixes, Kanban tickets, or doc syncing), the agent `MUST` spawn `invoke_subagent` with `Model='flash'` instead of asking the user to switch `/model`.
 - `WHILE` running on Hydrogen or Neon, `WHEN` a task requires Tier 3 reasoning (architecture, threat modeling, security/PRR audits), the agent `MUST` escalate via `invoke_subagent` with `Model='pro'`.
+- `WHILE` in **Phase 2 (PoC & Technical Spikes)**, the agent `MUST` isolate spike code in a scratch branch or `spikes/` directory and `MUST NOT` merge it into production without a clean rewrite and tests.
 
 ## 2. Quick Model Reference (`agy models`)
 

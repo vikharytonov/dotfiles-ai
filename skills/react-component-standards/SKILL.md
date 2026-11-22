@@ -75,3 +75,15 @@ Prefer composition over prop overload and preserve native HTML semantics.
 | **Semantic HTML** | Components MUST use `<button>` for actions, `<a href>` for navigation, and landmarks (`<main>`, `<nav>`, `<header>`). |
 | **Keyboard & Focus** | Interactive elements MUST be tab-focusable with visible focus rings (`focus-visible:ring-2`) and modal focus trapping/restoration. |
 | **Forms & ARIA** | Inputs MUST pair with `<label htmlFor>` (or `aria-label`), link errors via `aria-describedby`, and expose `aria-expanded`/`aria-pressed`/`aria-busy`. |
+
+## 6. UI States & Design Tokens
+
+Every data-driven or interactive view MUST handle all core visual states and consume semantic tokens.
+
+| Dimension | Mandatory Standard (`MUST` / `MUST NOT`) |
+| :--- | :--- |
+| **Loading / Pending** | Render a skeleton or disabled control with `aria-busy="true"` during async fetches or mutations. |
+| **Empty State** | Render clear copy and a primary next action when collections are empty; never leave a blank container. |
+| **Error State** | Display actionable, human-readable error feedback with a retry path or fallback boundary. |
+| **Responsive & Focus** | Support mobile-first viewports without horizontal overflow and preserve visible keyboard focus (`focus-visible:ring-2`). |
+| **Design Tokens** | Use semantic CSS variables or theme tokens for colors, spacing, and typography; `MUST NOT` scatter raw magic hex/px values. |
