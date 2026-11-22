@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Generate Conventional Commit messages based on git diffs, task context, and branch name. Use when asked to commit changes or write a commit message.
+description: Fast 1-command Conventional Commits v1.0.0 generator with Docs-Drift Gate and QRH verification. Use when asked to commit changes or write a commit message (defer branching, worktrees, semver releases, and changelogs to `git-workflow-and-versioning`).
 ---
 
 # Commit Skill

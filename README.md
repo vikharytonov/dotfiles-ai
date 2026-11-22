@@ -60,4 +60,4 @@ Core rules and modular skills organized by Diátaxis type and Gemini 4 execution
 | **Project Lifecycle Models** | Explanation | Tier 2–3 (Phase gates) | [skills/project-lifecycle-models/SKILL.md](skills/project-lifecycle-models/SKILL.md) | 8-phase SDLC framework and Gemini 4 model selection |
 | **React Component Standards** | Reference | Tier 2 (Neon) | [skills/react-component-standards/SKILL.md](skills/react-component-standards/SKILL.md) | React Clean Code, derived state, effect hygiene, and WCAG rules |
 | **React Router (v7+)** | Reference | Tier 2 (Neon) | [skills/react-router/SKILL.md](skills/react-router/SKILL.md) | React Router v7+ modes, `loader`/`action`, fetchers, and typegen |
-| **Testing Standards** | Reference / How-To | Tier 1–3 (Test-scoped) | [skills/testing-standards/SKILL.md](skills/testing-standards/SKILL.md) | Clean Code Ch. 9 (F.I.R.S.T., AAA), Khorikov, Dodds, EARS & BVA testing |
+| **Testing Standards** | Reference / How-To | Tier 1–3 (Test-scoped) | [skills/testing-standards/SKILL.md](skills/testing-standards/SKILL.md) | EARS-to-Test mapping, 6-point BVA, WCAG locators, clean blueprints & diff gate |

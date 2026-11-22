@@ -1,59 +1,32 @@
 ---
 name: testing-standards
-description: Enforces high-signal testing and verification standards blending Robert C. Martin's Clean Code (Chapter 9: F.I.R.S.T., Build-Operate-Check, 1 concept per test), Vladimir Khorikov's Classical Unit Testing (observable behavior over implementation details, mock only external boundaries), Kent C. Dodds' Testing Trophy (accessibility-first locators), Rolls-Royce EARS-to-Test mapping, and Boundary Value Analysis (BVA). Activate whenever writing tests, fixing bugs (Red-Green-Refactor), designing test suites, or reviewing test quality.
+description: Complements `test-driven-development` and `GEMINI.md` §5 with EARS-to-Test mapping, 6-point Boundary Value Analysis (BVA), Dodds/WCAG accessibility-first UI locators, Testing Trophy allocation, clean TS/RTL blueprints (zero narrator comments), and an executable anti-cheating diff gate. Activate when designing test matrices, writing domain BVA or React component tests, or auditing test quality.
 ---
 
-# Testing & Verification Standards (Clean Code Ch. 9 + Khorikov + Dodds + EARS)
+# Testing & Verification Standards (EARS + BVA + Dodds + Clean Blueprints)
 
-All test code MUST follow `rules/GEMINI.md` Section 3 (Clean Code: self-explaining names, zero narrator comments, small functions, surgical diffs) and Section 5 (Testing Principles).
+Apply `GEMINI.md` §3 (Clean Code) and §5 (Testing Principles) alongside `test-driven-development` for the Red-Green-Refactor loop. This skill supplies the non-overlapping specification, locator, and quality rules below.
 
 ---
 
-## 1. Model & Subagent Routing for Testing
+## 1. Overrides Over Generic TDD Conventions
 
-Match the Gemini 4 model tier to the testing task and auto-delegate multi-step runner loops:
+Where generic TDD examples conflict with these standards, enforce these stricter rules:
 
-| Testing Scope | Recommended Model / Subagent | Execution Rule (`MUST`) |
+| Area | Avoid | Required Standard (`MUST`) |
 | :--- | :--- | :--- |
-| **Unit Test Generation, BVA Cases & Red-Green Loops (`>2` tool calls)** | `gemini-4-hydrogen-high` or `invoke_subagent(TypeName='test-engineer', Model='flash')` | `WHILE` main session is on Argon or Neon, `WHEN` generating unit tests or running >2 test-fix iterations, `MUST` auto-delegate to `Model='flash'` with the 4-part Brief Contract. |
-| **Integration, API Route, React Component & E2E Flow Tests** | `gemini-4-neon-medium` or `gemini-pro-orchestrator-neon` | Execute on Neon/Orchestrator; on Argon, outline the test matrix in 2–3 bullets and offload boilerplate/runner execution to `Model='flash'`. |
-| **Test Strategy, Concurrency/Race Conditions, Auth/Crypto & Fuzzing** | `gemini-4-argon-high` (or `Model='pro'` subagent when on Hydrogen/Neon) | Use Argon directly to design threat/race reproduction tests and verify boundary invariants. |
+| **AAA Formatting** | `// Arrange`, `// Act`, `// Assert` narrator comments | Separate **Build**, **Operate**, and **Check** with **1 blank line** only. |
+| **Test Allocation (Testing Trophy)** | 80% shallow unit tests with mocked DB/API layers | **Unit tests** for pure domain logic & BVA; **Integration/Component tests** (highest ROI) for API routes, DB queries, and UI flows; **E2E** strictly for critical user journeys. |
+| **Control Flow in Tests** | `if/else`, `for`/`while`, or manual `try/catch` inside `it()` | Keep test bodies flat; use `it.each(...)` and `expect(() => fn()).toThrow()` / `rejects.toThrow()`. |
+| **UI Locator Priority (Dodds / WCAG)** | CSS classes (`.btn-primary`), tag names, XPath, or default `data-testid` | Query as users and screen readers do: **1. `getByRole` (with `name`) -> 2. `getByLabelText` -> 3. `getByPlaceholderText` / `getByText` -> 4. `getByTestId` (last resort)**. |
 
 ---
 
-## 2. Bob Martin's *Clean Code* (Chapter 9) Test Mechanics
+## 2. Rolls-Royce EARS-to-Test Mapping & Boundary Value Analysis (BVA)
 
-Test code is first-class code; dirty tests rot a codebase faster than no tests.
+Map every EARS clause from PRDs, specs, or `CONSTRAINTS.md` 1:1 to a deterministic test:
 
-| Clean Code Rule | Mechanical Requirement (`MUST` / `MUST NOT`) |
-| :--- | :--- |
-| **F.I.R.S.T. Properties** | Every test `MUST` be **F**ast (ms for unit, s for integration), **I**ndependent (runs in any order with zero shared mutable state), **R**epeatable (deterministic clock/randomness, zero live internet dependency), **S**elf-Validating (automated boolean assertion), and **T**imely (written before or with the production change). |
-| **Build–Operate–Check (AAA) Without Narrator Comments** | Separate setup (**Build**), execution (**Operate**), and verification (**Check**) using **1 blank line** between phases. In compliance with `GEMINI.md` Section 3, tests `MUST NOT` contain `// Arrange`, `// Act`, or `// Assert` narrator comments. |
-| **One Behavioral Concept per Test** | Each `it()` block `MUST` verify strictly 1 logical scenario. Split multiple scenarios into separate tests or `it.each(...)` table rows. |
-| **DAMP Over Over-DRY** | Keep each test self-contained and readable top-to-bottom (**DAMP**: Descriptive And Meaningful Phrases). Use domain factory builders (`buildUser({ role: 'admin' })`) showing only the overrides relevant to that test; `MUST NOT` hide critical test inputs inside opaque `beforeEach` blocks. |
-| **Zero Control-Flow Logic in Tests** | Test bodies `MUST NOT` contain `if/else`, `for`/`while` loops, or manual `try/catch` blocks (use framework assertion primitives like `expect(() => fn()).toThrow()` or `rejects.toThrow()`). |
-| **Red-Green-Refactor (Prove-It Pattern)** | `WHEN` fixing any bug, the agent `MUST` first run a test that reproduces the bug and watch it fail (`Red`), then apply the minimal production fix and watch it pass (`Green`). |
-
----
-
-## 3. Khorikov's Classical School & Dodds' Testing Trophy
-
-Protect against **False Positives** (tests that break during safe internal refactoring) and **Tautological Mocks** (tests that only verify their own mock setup):
-
-| Dimension | Anti-Pattern (`MUST NOT`) | Required Standard (`MUST`) |
-| :--- | :--- | :--- |
-| **Observable Behavior vs. Implementation** | Asserting on private helpers, internal React `useState` values, SQL string formatting, or internal function call counts (`expect(internalHelper).toHaveBeenCalled()`). | Assert strictly on the **3 observable outcomes**: (1) Return value / thrown error, (2) Public state / DB mutation, or (3) Out-of-process external boundary call. |
-| **Test Double Hierarchy** | Mocking internal modules (`vi.mock('./pricing')`), pure functions, or data mappers. | Follow strict preference: **1. Real Implementation -> 2. In-Memory Fake -> 3. Stub -> 4. Mock**. Mock **only** unmanaged external boundaries (3rd-party HTTP/OAuth/Stripe APIs, email/SMS gateways, system clock, randomness). |
-| **Testing Trophy Allocation** | 100% shallow unit tests with mocked DB/API layers, or slow brittle E2E tests for every validation permutation. | Use **Unit Tests** for pure domain logic & BVA edge cases, **Integration/Component Tests** (highest ROI) for API routes, DB queries, and UI state flows, and **E2E Tests** strictly for critical user journeys (auth, checkout, core workflow). |
-| **UI & Browser Locator Priority (Dodds / WCAG)** | Querying DOM elements by CSS classes (`.btn-primary`), tag names, XPath, or defaulting to `data-testid` when semantic text/roles exist. | Query the way users and screen readers perceive the UI: **1. `getByRole` (with `name`) -> 2. `getByLabelText` -> 3. `getByPlaceholderText` / `getByText` -> 4. `getByTestId` (last resort only)**. |
-
----
-
-## 4. Rolls-Royce EARS-to-Test Mapping & Boundary Value Analysis (BVA)
-
-Translate every EARS specification clause from PRDs, Kanban tickets, or `CONSTRAINTS.md` directly into deterministic tests:
-
-| EARS Requirement Pattern | 1:1 Test Naming & Assertion Structure |
+| EARS Pattern | 1:1 Test Naming & Assertion Structure |
 | :--- | :--- |
 | **Ubiquitous:** `The <system> MUST <response>.` | `it('validates JWT signature on protected routes', ...)` |
 | **Event (`WHEN`):** `WHEN <trigger>, the <system> MUST <response>.` | `it('returns 401 TOKEN_EXPIRED when magic link exceeds TTL', ...)` |
@@ -61,8 +34,9 @@ Translate every EARS specification clause from PRDs, Kanban tickets, or `CONSTRA
 | **Error (`IF/THEN`):** `IF <fault>, THEN the <system> MUST <recovery>.` | `it('aborts processing and logs security event if Stripe HMAC is invalid', ...)` |
 | **Optional (`WHERE`):** `WHERE <flag>, the <system> MUST <response>.` | `it('records audit diff when ENABLE_AUDIT_LOG is true', ...)` |
 
-### Mandatory Boundary Value Analysis (BVA) Matrix
-Whenever testing numeric, length, collection, or time boundaries (e.g., valid range `[MIN, MAX]`), cover all **6 boundary points** using parameterized `it.each` tables instead of copy-pasted tests:
+### Mandatory 6-Point BVA Matrix
+
+Cover all 6 boundary points for numeric, length, collection, or time ranges `[MIN, MAX]` using `it.each(...)`:
 
 | Boundary Point | Value Tested | Expected Outcome |
 | :--- | :--- | :--- |
@@ -71,11 +45,11 @@ Whenever testing numeric, length, collection, or time boundaries (e.g., valid ra
 | **Exact Min** | `MIN` | Accept (inclusive lower bound) |
 | **Exact Max** | `MAX` | Accept (inclusive upper bound) |
 | **Just Above Max** | `MAX + 1` | Reject (`> MAX` boundary error) |
-| **Clock / Async Edge** | Exact expiry timestamp (`t === ttl`), concurrent duplicate call | Deterministic expiry handling & idempotency verified |
+| **Clock / Async Edge** | Exact expiry (`t === ttl`), concurrent duplicate call | Deterministic expiry handling & idempotency verified |
 
 ---
 
-## 5. Clean Test Blueprints (Zero Narrator Comments)
+## 3. Clean Test Blueprints (Zero Narrator Comments)
 
 ### Blueprint A: Domain Unit Test + BVA Table (`it.each`)
 ```typescript
@@ -120,11 +94,10 @@ describe('DeleteProjectDialog', () => {
 
 ---
 
-## 6. Anti-Cheating & Execution Verification Gate (QRH)
+## 4. Zero Bar-Lowering Diff Gate (QRH)
 
-Before marking any coding or testing task complete, enforce these strict verification rules:
-
-1. **Discover Repo Test Runner First:** Inspect `package.json`, `Makefile`, `pyproject.toml`, `Cargo.toml`, or `go.mod` and run the repository's native test command.
-2. **Focused Run -> Full Suite Run:** Run the single target test file during the Red-Green loop; run the full affected suite once after the last edit. **`MUST NOT` re-run passing test commands without an intervening edit.**
-3. **Zero Bar-Lowering Gate:** The diff `MUST NOT` introduce `.skip`, `.only`, `todo`, commented-out `expect(...)` lines, `@ts-ignore`, `@ts-expect-error` (except inside negative type tests), `eslint-disable`, or lowered coverage thresholds in config files.
-   **Verify:** Run `git diff | grep -E '^\+.*(\.skip|\.only|@ts-ignore|eslint-disable)'` and confirm output is empty (`0` matches).
+Before marking any coding or testing task complete, confirm the diff adds no `.skip`, `.only`, `todo`, commented-out `expect(...)`, `@ts-ignore`, `@ts-expect-error` (outside negative type tests), `eslint-disable`, or lowered coverage thresholds:
+```bash
+git diff | grep -E '^\+.*(\.skip|\.only|@ts-ignore|eslint-disable)'
+```
+**Verify:** Command produces `0` matches.

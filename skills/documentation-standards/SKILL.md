@@ -42,8 +42,6 @@ Apply these deterministic rules to every Markdown file:
 | `This script basically handles the migration of...` | `Migrate the database schema:` |
 | `easily`, `simply`, `basically`, `just`, `obviously` | *(Delete completely)* |
 
-6. **Single Source of Truth (Docs-as-Code):** Never copy-paste large TypeScript interfaces, full JSON schemas, or all 30 `package.json` scripts into Markdown. Link directly to the source file (`[schema.ts](../src/schema.ts)`) and document only the entry command.
-
 ---
 
 ## 3. Rolls-Royce EARS + RFC 2119 Grammar for Specs & Acceptance Criteria
