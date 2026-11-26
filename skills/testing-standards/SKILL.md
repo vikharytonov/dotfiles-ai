@@ -1,11 +1,11 @@
 ---
 name: testing-standards
-description: Complements `test-driven-development` and `GEMINI.md` §5 with EARS-to-Test mapping, 6-point Boundary Value Analysis (BVA), Dodds/WCAG accessibility-first UI locators, Testing Trophy allocation, clean TS/RTL blueprints (zero narrator comments), and an executable anti-cheating diff gate. Activate when designing test matrices, writing domain BVA or React component tests, or auditing test quality.
+description: Complements `test-driven-development` and `GEMINI.md` §3 with EARS-to-Test mapping, 6-point Boundary Value Analysis (BVA), Dodds/WCAG accessibility-first UI locators, Testing Trophy allocation, clean TS/RTL blueprints (zero narrator comments), and an executable anti-cheating diff gate. Activate when designing test matrices, writing domain BVA or React component tests, or auditing test quality.
 ---
 
 # Testing & Verification Standards (EARS + BVA + Dodds + Clean Blueprints)
 
-Apply `GEMINI.md` §3 (Clean Code) and §5 (Testing Principles) alongside `test-driven-development` for the Red-Green-Refactor loop. This skill supplies the non-overlapping specification, locator, and quality rules below.
+Apply `GEMINI.md` §3 (Code, Docs & Testing Baseline) alongside `test-driven-development` for the Red-Green-Refactor loop. This skill supplies the non-overlapping specification, locator, and quality rules below.
 
 ---
 
@@ -19,6 +19,8 @@ Where generic TDD examples conflict with these standards, enforce these stricter
 | **Test Allocation (Testing Trophy)** | 80% shallow unit tests with mocked DB/API layers | **Unit tests** for pure domain logic & BVA; **Integration/Component tests** (highest ROI) for API routes, DB queries, and UI flows; **E2E** strictly for critical user journeys. |
 | **Control Flow in Tests** | `if/else`, `for`/`while`, or manual `try/catch` inside `it()` | Keep test bodies flat; use `it.each(...)` and `expect(() => fn()).toThrow()` / `rejects.toThrow()`. |
 | **UI Locator Priority (Dodds / WCAG)** | CSS classes (`.btn-primary`), tag names, XPath, or default `data-testid` | Query as users and screen readers do: **1. `getByRole` (with `name`) -> 2. `getByLabelText` -> 3. `getByPlaceholderText` / `getByText` -> 4. `getByTestId` (last resort)**. |
+| **Behavior Over Implementation** | Asserting on private helpers, internal hook state, or internal function call counts | Assert on observable outcomes (return values, public state changes, or external boundary calls). |
+| **Mock Only External Boundaries** | Mocking internal modules, pure helpers, or in-process collaborators | Prefer `Real Implementation > In-Memory Fake > Stub > Mock`; mock only unmanaged out-of-process boundaries (3rd-party HTTP/OAuth/Stripe APIs, clock, randomness). |
 
 ---
 

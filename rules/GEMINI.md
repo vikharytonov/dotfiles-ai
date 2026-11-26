@@ -1,79 +1,45 @@
 # Token, Context & Model Efficiency Rules
 
-## 1. Output & Tool Hygiene (Minimize Token Burn)
-Apply these mandatory rules to every chat response and tool invocation to minimize token burn across turns.
-
-| Standard | Mandatory Rule (`MUST` / `MUST NOT`) |
+## 1. Output & Session Hygiene
+| Standard | Rule |
 | :--- | :--- |
 | **BLUF & Brevity** | Put the answer, command, or result in sentence 1; cap chat replies at 2–4 bullets or 1–2 short paragraphs (use an artifact for specs, audits, or plans >30 lines); `MUST NOT` include preamble, closing filler, or reasoning walkthroughs. |
-| **Horn Tables in Chat** | `WHEN` presenting 3+ options, trade-offs, changed files, or verification results, `MUST` use a Markdown table instead of prose paragraphs. |
-| **Zero Tool Narration** | `MUST NOT` narrate tool calls before or after execution (*"I will now read..."*, *"I updated X to do Y"*); report completed work as `Change -> Verification Result`. |
-| **ASD-STE100 Chat Style** | Use active voice and ≤25 words per sentence; `MUST NOT` use filler words (`simply`, `easily`, `basically`, `just`, `please note`, `in order to`). |
-| **Targeted Reads & Edits** | Read only needed line ranges (`StartLine`/`EndLine`) or `grep_search`; batch independent tool calls and shell checks; output targeted diffs; recommend `/compact` when context grows long. |
-| **Code Review Format** | `WHEN` outputting a code review, `MUST` start on line 1 with `**Verdict: <Approve \| Request changes>**` followed immediately by a 1-line summary, omitting any `Review:` title header. |
-| **Skill Precedence** | Custom skills in `~/.gemini/antigravity-cli/skills/` `MUST` override overlapping plugin skills: `documentation-standards` > `documentation-and-adrs`; `react-component-standards` > React/JSX rules in `frontend-ui-engineering`; `backend-data-standards` > data/error rules in `api-and-interface-design` (escalate to `security-and-hardening` for threat modeling/audits); `project-lifecycle-models` > `planning-and-task-breakdown` (phase transitions); `testing-standards` complements `test-driven-development`; `commit` defers branching/releases to `git-workflow-and-versioning`. |
-| **Project Context & State** | `WHEN` starting a session, read `CONSTRAINTS.md` and any repo state/backlog file (`PROGRESS.md`, `TODO.md`, `docs/adr/` index) if present; `MUST NOT` violate invariants and `MUST` update `PROGRESS.md` before `/compact` or phase/milestone completion (see `project-lifecycle-models`). |
+| **Horn Tables** | `WHEN` presenting 3+ options, trade-offs, changed files, or verification results, `MUST` use a Markdown table. |
+| **Zero Tool Narration** | `MUST NOT` narrate tool calls before or after execution; report completed work as `Change -> Verification Result`. |
+| **Style** | Use active voice and ≤25 words/sentence; `MUST NOT` use filler words (`simply`, `easily`, `basically`, `just`, `please note`, `in order to`). |
+| **Targeted Reads** | Read only needed line ranges (`StartLine`/`EndLine`) or `grep_search`; output targeted diffs. |
+| **Code Review Format** | `WHEN` outputting a code review, start line 1 with `**Verdict: <Approve \| Request changes>**` + 1-line summary; omit any `Review:` header. |
+| **Skill Precedence** | Custom skills in `~/.gemini/antigravity-cli/skills/` `MUST` override overlapping plugin skills: `documentation-standards` > `documentation-and-adrs`; `react-component-standards` > React/JSX in `frontend-ui-engineering`; `backend-data-standards` > data/error in `api-and-interface-design` (escalate to `security-and-hardening` for threat modeling/audits); `project-lifecycle-models` > `planning-and-task-breakdown` (phase transitions); `testing-standards` complements `test-driven-development`; `commit` defers branching/releases to `git-workflow-and-versioning`. |
+| **Project State** | `WHEN` starting a session, read `CONSTRAINTS.md`, `PROGRESS.md`, `TODO.md`, or `docs/adr/` index if present; `MUST NOT` violate invariants and `MUST` update `PROGRESS.md` before `/compact` or phase/milestone completion. `WHEN` creating or auditing a repo lacking `CONSTRAINTS.md` or automated code/test gates, flag the gap and offer `setup.sh --init-repo <dir>` + `constraint-driven-development`. |
 
-## 2. Automatic Model-per-Task & Subagent Routing
-Route tasks to minimize quota/token cost and keep the main context small (see `project-lifecycle-models` for exact CLI model IDs). The agent `MUST NOT` spawn a subagent for trivial 1–2 turn tasks where direct batched execution uses fewer tokens.
+## 2. Model & Subagent Routing
+`MUST NOT` spawn a subagent for trivial 1–2 turn tasks where direct batched execution uses fewer tokens (see `project-lifecycle-models` for CLI model IDs).
 
-| Tier & Family | Scope | Execution & Subagent Action |
+| Tier | Scope | Execution & Subagent Action |
 | :--- | :--- | :--- |
-| **Tier 0: Micro** (`Hydrogen`) | 1-file surgical edits, quick bash/git checks, direct Q&A (≤2 sequential turns) | Execute directly in main session (zero subagent overhead) regardless of active model. |
-| **Tier 1: Fast Offload** (`Model='flash'` or `'flash_lite'`) | Broad searches (`>4` files), doc/web lookups (`research`), large log/transcript parsing (`flash_lite`), unit tests (`test-engineer`), lint/type loops, bulk Kanban tickets, README/table/changelog sync (`self`) | **Auto-delegate (>2 sequential turns or >4 files / noisy test-lint loops):** Spawn `invoke_subagent(..., Model='flash')` with clear brief and rule/skill pointers; require a 2–4 bullet summary back. |
-| **Tier 2: Standard** (`Neon` / `Orchestrator Neon`) | PoC spikes, Walking Skeleton (CI/CD, test harness, `CONSTRAINTS.md`), QRH runbooks, 1–3 file MVP features, UI components, CRUD routes, moderate regressions | On **Neon/Orchestrator**: execute directly (or fan out parallel `self` slices). On **Argon**: plan in 2–3 bullets and offload boilerplate/test loops to `self` (`Model='flash'`). |
-| **Tier 3: Frontier** (`Argon` / `Orchestrator Argon`, `Model='pro'`) | PRD/EARS specs (`Argon`), architecture/C4/ADRs/threat modeling, multi-file MVP slices (`Orchestrator`), critical auth/payment/HMAC/crypto, PRR, profiling/N+1/races, zero-downtime DB migrations | On **Argon**: execute core reasoning/security directly and offload repetitive file/test steps to `Model='flash'`. On **Hydrogen/Neon**: auto-escalate via `invoke_subagent(TypeName='self'\|'security-auditor'\|'code-reviewer', Model='pro')`. |
+| **Tier 0: Micro** (`Hydrogen`) | 1-file surgical edits, quick bash/git checks, direct Q&A (≤2 turns) | Execute directly in main session regardless of active model. |
+| **Tier 1: Fast Offload** (`flash` / `flash_lite`) | Broad searches (`>4` files), doc/web lookups (`research`), log/transcript parsing (`flash_lite`), unit tests (`test-engineer`), lint/type loops, bulk tickets, README/changelog sync (`self`) | Auto-delegate (>2 turns, >4 files, or noisy loops): `invoke_subagent(..., Model='flash')`; require a 2–4 bullet summary back. |
+| **Tier 2: Standard** (`Neon` / `Orchestrator Neon`) | PoC spikes, Walking Skeleton, QRH runbooks, 1–3 file MVP features, UI components, CRUD routes, moderate regressions | On **Neon/Orchestrator**: execute directly or fan out parallel `self` slices. On **Argon**: plan in 2–3 bullets and offload boilerplate/test loops to `self` (`Model='flash'`). |
+| **Tier 3: Frontier** (`Argon` / `Orchestrator Argon`, `Model='pro'`) | PRD/EARS specs, architecture/C4/ADRs/threat modeling, multi-file MVP slices, auth/payment/crypto, PRR, profiling/N+1/races, zero-downtime migrations | On **Argon**: execute core reasoning/security directly; offload repetitive steps to `Model='flash'`. On **Hydrogen/Neon**: escalate via `invoke_subagent(TypeName='self'\|'security-auditor'\|'code-reviewer', Model='pro')`. |
 
-- **Subagent Brief Contract:** `WHEN` spawning any subagent, the brief `MUST` state: (1) exact files/scope owned, (2) skill or `GEMINI.md` section to apply (e.g., *"Follow GEMINI.md Section 3 Clean Code"* or *"Load `documentation-standards` skill"*), (3) verification command, and (4) *"Return a 2–4 bullet summary only."* Parallel write subagents `MUST` own disjoint file paths or run in `Workspace='share'`.
-- **Model Switch Hint:** The agent `MUST` suggest a manual `/model` switch (1 short line) ONLY when shifting an entire project phase for a multi-turn session (load `project-lifecycle-models` at transitions).
+- **Subagent Brief Contract:** State (1) exact files/scope owned, (2) skill or `GEMINI.md` section to apply, (3) verification command, and (4) *"Return a 2–4 bullet summary only."* Parallel write subagents `MUST` own disjoint paths or use `Workspace='share'`.
+- **Model Switch Hint:** Suggest a manual `/model` switch (1 line) ONLY when shifting an entire project phase for a multi-turn session.
 
-## 3. Fundamental Code & Comment Principles (Mandatory Baseline)
-Apply these mandatory rules whenever writing, updating, refactoring, or deleting ANY code (React, TypeScript, backend, scripts) or comments.
-
-| Principle | Mandatory Rule (`MUST` / `MUST NOT`) |
+## 3. Code, Docs & Testing Baseline
+| Area | Rule |
 | :--- | :--- |
-| **Minimal Code (KISS / YAGNI)** | Write the fewest lines possible; keep functions/components small, flat, single-purpose; `MUST NOT` add speculative features, premature abstractions, or single-use wrappers. |
-| **Self-Explaining Names** | State intent clearly (`is/has/can/should*` booleans, `handle*` handlers, `on*` props); extract complex conditions into named variables or helpers instead of commenting. |
-| **Guard Clauses** | Use early returns (`if (!isValid) return;`, `if (isLoading) return <Skeleton />;`) to keep indentation and JSX flat (max 1–2 levels; no nested ternaries). |
-| **Signatures & Constants** | Limit functions to 2–3 args and components to focused props; avoid boolean flag props/args (use separate functions/components or composition); replace magic values with named constants. |
-| **Comments as Last Resort** | Comment only non-obvious domain *why* (never *what*), max 1 short line; `MUST NOT` write narrator comments (`// loop through items`, `{/* render header */}`) or redundant JSDoc/boilerplate. |
-| **Comment-Code Lifecycle** | `WHEN` modifying or deleting code, inspect adjacent comments and immediately update or delete stale or redundant ones. |
-| **Surgical Edits** | Produce the smallest diff touching only task lines; `MUST NOT` reformat, rename, or refactor unrelated adjacent code; delete only dead imports, variables, or comments your edit rendered obsolete. |
-| **Dependency & API Grounding** | Inspect the project manifest (`package.json`, `pyproject.toml`) before adding packages; prefer stdlib or existing deps; `MUST` verify unfamiliar library APIs, CLI flags, or types against installed `node_modules`/docs before writing code. |
+| **Code Shape** | Avoid boolean flag args/props (use separate functions/components or composition); keep indentation/JSX flat (max 2 levels; no nested ternaries). |
+| **Comments** | Comment only non-obvious domain *why* (max 1 line); `MUST NOT` write narrator comments or redundant JSDoc; update or delete stale adjacent comments on edit. |
+| **Surgical Edits** | Produce the smallest diff touching only task lines; `MUST NOT` reformat or refactor unrelated code; delete only dead imports, vars, or comments your edit obsoleted. |
+| **Dependency Grounding** | Check project manifest (`package.json`, `pyproject.toml`) before adding deps; prefer stdlib or existing deps; verify unfamiliar APIs, flags, or types against installed `node_modules`/docs first. |
+| **Documentation** | `IF` writing a new doc, spec, ADR, runbook, or >30 lines of Markdown, `THEN` load `documentation-standards`; sync or delete affected docs in the same turn. |
+| **Testing & Anti-Cheating** | `IF` designing tests, fixing a bug, or writing >2 tests, `THEN` load `testing-standards`. `WHEN` fixing a bug or adding domain logic, write a failing test first (`Red -> Green`). `MUST NOT` use `.skip`, `.only`, delete assertions, add `@ts-ignore`/`eslint-disable`, or lower coverage thresholds. |
+| **End-of-Task Gate** | `WHEN` finishing code edits, run typecheck, lint, and affected tests and report observed exit output. `WHEN` modifying UI layout, routing, or client state, verify via dev server (`browser-testing-with-devtools` or E2E smoke) when available (`0` console/network errors across mobile and desktop). |
 
-## 4. Documentation Principles (Dual-Audience: Human + AI)
-Apply these mechanical rules whenever creating, updating, or reviewing Markdown; `IF` writing a new doc, spec, ADR, runbook, or >30 lines of Markdown, `THEN` read `documentation-standards` first.
-
-| Standard | Mechanical Rule (`MUST` / `MUST NOT`) |
+## 4. Safety & Workflow Guardrails
+| Guardrail | Rule |
 | :--- | :--- |
-| **Diátaxis & S1000D Caps** | Root `README.md` `MUST` be ≤150 lines (1-sentence purpose, 3–5 command Quick Start, link table to `docs/*.md`); topic docs `MUST` be ≤250 lines with 1 intent (Tutorial, How-To Runbook, Reference, or ADR Explanation). |
-| **BLUF & Horn Tables** | Put command, table, or answer in first 3 lines of every section; max 1-sentence intro under headings; **3+ parallel items, CLI flags, env vars, options, or `if/else` paths `MUST` use a Markdown table** (prose banned). |
-| **ASD-STE100 Mechanics** | Use imperative active voice (`Run X`, never `You can run X`); cap sentences at **≤20 words** (instructional) / **≤25 words** (descriptive), 1 action/step; ban `simply`, `easily`, `basically`, `just`, `please note`, `in order to`. |
-| **EARS + RFC 2119 Specs** | Write requirements/PRDs/ACs with uppercase `MUST`/`MUST NOT`: Ubiquitous (`The <system> MUST...`), Event (`WHEN <trigger>...`), State (`WHILE <state>...`), Error (`IF <condition>, THEN...`), Optional (`WHERE <feature>...`). |
-| **C4, ADRs & QRH** | Express architecture via C4 `mermaid` diagrams and 1-page ADRs (`docs/adr/NNNN-slug.md`: `Status -> Context -> Decision -> Consequences`); pair runbook steps with `Action Command -> Expected Verification Output` and `Rollback`. |
-| **Docs-as-Code & Models** | `MUST NOT` duplicate code, types, or `package.json` in prose; sync or delete affected docs in the same turn. Route: `Hydrogen` (README/table/changelog sync), `Neon` (QRH/modularization), `Argon` (EARS/C4/ADRs). |
-
-## 5. Testing & Verification Principles (Clean Code Ch. 9 + Khorikov + Dodds + EARS)
-Apply these mandatory rules whenever writing, updating, or running tests; `IF` designing a test suite, fixing a bug, or writing >2 tests, `THEN` read `testing-standards` first.
-
-| Principle | Mandatory Rule (`MUST` / `MUST NOT`) |
-| :--- | :--- |
-| **Red-Green & F.I.R.S.T.** | `WHEN` fixing a bug or adding domain logic, `MUST` write/run a failing test (`Red`) before production code (`Green`). All tests `MUST` be **F**ast, **I**ndependent (zero shared mutable state), **R**epeatable (offline/deterministic), **S**elf-Validating, and **T**imely. |
-| **Clean Tests (AAA & DAMP)** | Structure tests as flat **Build–Operate–Check (AAA)** separated by blank lines (**`MUST NOT` write `// Arrange`, `// Act`, `// Assert` narrator comments**); enforce 1 behavioral concept per test, **DAMP** self-contained setup, and **zero control-flow logic (`if/else`, `for`, `try/catch`)** inside test bodies. |
-| **Behavior Over Implementation** | Assert on observable outcomes (return value, public state change, or external boundary call); `MUST NOT` assert on private helpers, internal hook state, or internal function call counts. |
-| **Mock Only External Boundaries** | Prefer `Real Implementation > In-Memory Fake > Stub > Mock`. `MUST` mock only unmanaged out-of-process boundaries (3rd-party HTTP/OAuth/Stripe APIs, clock, randomness); `MUST NOT` mock internal modules or pure helpers. |
-| **EARS, BVA & UI Locators** | Map every EARS spec clause (`WHEN`/`WHILE`/`IF-THEN`) 1:1 to a test case plus **Boundary Value Analysis** (`min-1, min, max, max+1, empty/null`). UI/E2E tests `MUST` query by accessibility semantics first (`getByRole` > `getByLabelText` > `getByText` > `getByTestId`; `MUST NOT` query by CSS class). |
-| **Anti-Cheating & Model Routing** | `MUST NOT` use `.skip`, `.only`, delete assertions, add `@ts-ignore`/`eslint-disable`, or lower coverage thresholds to pass CI. Route: `Model='flash'` (`test-engineer` / `self`) for >2-step unit test generation & runner loops; `Neon` for integration/component tests; `Argon` (`Model='pro'`) for security, concurrency, and test architecture. |
-| **End-of-Task Gate** | `WHEN` finishing any code edit, `MUST` run project typecheck, lint, and affected tests and report observed exit output; `MUST NOT` claim green results without executing checks. `WHEN` modifying UI layout, routing, or client state, verify runtime behavior via dev server (`browser-testing-with-devtools` or E2E smoke) when available, confirming `0` console/network errors across mobile and desktop viewports. |
-
-## 6. Safety, Security & Anti-Looping Baseline
-Apply these mandatory guardrails to every edit and command, even when `security-and-hardening` is not loaded.
-
-| Guardrail | Mandatory Rule (`MUST` / `MUST NOT`) |
-| :--- | :--- |
-| **Input & Query Safety** | Validate untrusted inputs at every boundary (HTTP, CLI, URL, webhooks); `MUST` use parameterized queries and safe output encoding (no SQL/shell string interpolation or unescaped HTML). |
-| **Secret Hygiene** | `MUST NOT` hardcode, log, stage, or commit secrets, tokens, private keys, or `.env` files. |
-| **Destructive Operations** | `WHEN` a task requires destructive git, database, or file operations (`git reset --hard`, force-push, `DROP TABLE`, `rm -rf`), `MUST` request explicit user confirmation first. |
-| **Ambiguity Check** | `IF` requirements are ambiguous or alter public APIs, DB schemas, or UX flows, `MUST` clarify with the user before editing; `MUST NOT` invent scope silently. |
-| **Plan Before Broad Edits** | `WHEN` a change touches `>3` files or alters architecture, `MUST` present a 2–4 bullet plan before editing. |
-| **Anti-Looping Escalation** | `IF` 2–3 fix attempts fail on the same root cause, `THEN` `MUST` stop retrying, report observed evidence, and escalate to the user instead of guessing or weakening specs. |
+| **Destructive Ops** | Request explicit user confirmation before `git reset --hard`, force-push, `DROP TABLE`, `rm -rf`, or irreversible actions. |
+| **Secret Files** | `MUST NOT` read, print, or edit secret/credential files (`.env*`, private keys, cloud/CLI auth, `*.tfstate*`); use `.example`/`.template` copies instead. |
+| **Scope & Plan** | Clarify before altering public APIs, DB schemas, or UX flows; present a 2–4 bullet plan before editing `>3` files or altering architecture. |
+| **Anti-Looping** | `IF` 2–3 fix attempts fail on the same root cause, stop retrying, report observed evidence, and escalate to the user. |

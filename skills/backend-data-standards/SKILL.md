@@ -5,7 +5,7 @@ description: Enforces stack-agnostic backend, API, and data-layer standards (Nod
 
 # Backend & Data-Layer Standards (DDIA + Hexagonal + Release It! + Twelve-Factor)
 
-Ground all backend, server-action, and data-layer code in **DDIA (Kleppmann)**, **Hexagonal Architecture (Cockburn)**, ***Release It!* (Nygard)**, **Parse, Don't Validate (King)**, **OWASP ASVS**, **The Twelve-Factor App**, and **RFC 9457**, alongside `rules/GEMINI.md` §3 (Clean Code) and §6 (Safety Baseline).
+Ground all backend, server-action, and data-layer code in **DDIA (Kleppmann)**, **Hexagonal Architecture (Cockburn)**, ***Release It!* (Nygard)**, **Parse, Don't Validate (King)**, **OWASP ASVS**, **The Twelve-Factor App**, and **RFC 9457**, alongside `rules/GEMINI.md` §3 (Code, Docs & Testing Baseline) and §4 (Safety & Workflow Guardrails).
 
 ## 1. Boundary Validation & Strict Typing (Parse, Don't Validate + Twelve-Factor III)
 
