@@ -11,13 +11,14 @@ This skill translates **8 proven industrial & aerospace documentation frameworks
 
 ## 1. Model Routing by Documentation Task
 
-Match the Gemini 4 tier to task depth; WHEN a multi-step Reference/Syncing or Runbook task (>2 tool calls) runs on Argon or Neon, delegate via `invoke_subagent(TypeName='self', Model='flash')` (or escalate ADRs/EARS via `Model='pro'` from Hydrogen) with instructions to load `documentation-standards` and run `verify-docs.sh`:
+Match the Gemini 4 tier to task depth; WHEN a multi-step Reference/Syncing or Runbook task (>2 tool calls) runs on Carbon, Argon, or Neon, delegate via `invoke_subagent(TypeName='self', Model='flash')` (or escalate ADRs/EARS via `Model='pro'` from Hydrogen) with instructions to load `documentation-standards` and run `verify-docs.sh`:
 
 | Doc Category | Recommended Model | Why |
 | :--- | :--- | :--- |
 | **Reference & Syncing** (`README.md` tables, CLI flags, `.env` tables, changelogs, commit drift checks) | `gemini-4-hydrogen-medium` or `high` | Facts already exist in the code diff; Hydrogen formats tables and checks links rapidly at lowest quota cost |
 | **Runbooks & Modularization** (Aviation QRH runbooks, onboarding guides, splitting a bloated README into `docs/*.md`) | `gemini-4-neon-medium` or `gemini-pro-orchestrator-neon` | Requires multi-file workflow understanding without burning frontier Argon quota |
-| **Specs, Architecture & ADRs** (Rolls-Royce EARS PRDs, Simon Brown C4 `mermaid` graphs, Nygard ADRs) | `gemini-4-argon-medium` (PRDs/EARS) or `gemini-4-argon-high` (ADRs/C4) | Writing specs and ADRs *is* system design; Argon spots edge cases, failure modes, and architectural trade-offs |
+| **Specs, Architecture & ADRs** (Rolls-Royce EARS PRDs, single-service C4 `mermaid` graphs, Nygard ADRs) | `gemini-4-argon-medium` (PRDs/EARS) or `gemini-4-argon-high` (ADRs/C4) | Writing specs and ADRs *is* system design; Argon spots edge cases, failure modes, and architectural trade-offs |
+| **Cross-System Architecture & Security Specs** (Multi-service C4, threat models, PRR/migration designs) | `gemini-4-carbon` | High-stakes specs benefit from Carbon's deeper thinking budget for cross-boundary failure modes |
 
 ---
 
