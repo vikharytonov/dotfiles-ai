@@ -28,6 +28,7 @@ Run [setup.sh](setup.sh) flags to install or remove individual rules and skills 
 | `./setup.sh --rules` | Link standalone global rules for non-plugin tools | `~/.gemini/GEMINI.md`, `~/.gemini/AGENTS.md` |
 | `./setup.sh --skill <name>` | Symlink a single skill by directory name | `~/.gemini/{config,antigravity-cli}/skills/<name>` |
 | `./setup.sh --remove-skill <name>` | Remove a single installed skill symlink | `~/.gemini/{config,antigravity-cli}/skills/<name>` |
+| `./setup.sh --init-repo [dir]` | Copy `CONSTRAINTS.md`, `PROGRESS.md`, and install `pre-commit` gate (non-destructive) | `<dir>/CONSTRAINTS.md`, `<dir>/PROGRESS.md`, `<dir>/.git/hooks/pre-commit` |
 
 **Verify:** Run `~/projects/dotfiles-ai/setup.sh --list` or `ls -la ~/.gemini/antigravity-cli/skills/` to confirm expected skill symlinks exist.
 
@@ -55,6 +56,7 @@ Core rules and modular skills organized by Diátaxis type and Gemini 4 execution
 | Module | Type | Tier | Path | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
 | **Global Rules** | Reference | All Tiers (Baseline) | [rules/GEMINI.md](rules/GEMINI.md) | Token efficiency, model routing, Clean Code, docs, testing, and safety baseline |
+| **Secret Guard Hook** | Reference | Global `PreToolUse` | [hooks.json](hooks.json) | Hard-blocks agent reads/writes/shell access to `.env*`, keys, and creds (`force_ask` on hook edits) |
 | **Backend & Data Standards** | Reference | Tier 2–3 (Neon/Argon) | [skills/backend-data-standards/SKILL.md](skills/backend-data-standards/SKILL.md) | Stack-agnostic boundary validation, transactions, idempotency, and error taxonomy |
 | **Commit** | How-To | Tier 0–1 (Hydrogen) | [skills/commit/SKILL.md](skills/commit/SKILL.md) | Conventional Commits v1.0.0 generator with Doc-Drift Gate |
 | **Documentation Standards** | Reference / How-To | Tier 1–3 (Doc-scoped) | [skills/documentation-standards/SKILL.md](skills/documentation-standards/SKILL.md) | Dual-Audience (STE100, Diátaxis, EARS, C4, QRH) rules and validator |

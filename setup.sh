@@ -19,6 +19,7 @@ usage() {
   echo "  ./setup.sh --rules              # Link standalone global rules (GEMINI.md & AGENTS.md) for non-plugin tools"
   echo "  ./setup.sh --skill <name>        # Install/update a single skill by name"
   echo "  ./setup.sh --remove-skill <name> # Remove a single installed skill by name"
+  echo "  ./setup.sh --init-repo [dir]     # Scaffold CONSTRAINTS.md, PROGRESS.md, and pre-commit gate in a repo"
 }
 
 link_rules() {
@@ -62,6 +63,44 @@ list_skills() {
   done
 }
 
+init_repo() {
+  local TARGET_DIR="${1:-.}"
+  if [ ! -d "$TARGET_DIR" ]; then
+    echo -e "  ${RED}✗${NC} Directory '$TARGET_DIR' not found."
+    exit 1
+  fi
+
+  echo -e "${BLUE}Scaffolding quality gates in $TARGET_DIR:${NC}"
+  for TMPL in CONSTRAINTS.md PROGRESS.md; do
+    local DEST="$TARGET_DIR/$TMPL"
+    if [ -e "$DEST" ]; then
+      echo -e "  - Skipped $TMPL (already exists)"
+    else
+      cp "$DOTFILES_DIR/templates/$TMPL" "$DEST"
+      echo -e "  ${GREEN}✓${NC} Created $DEST"
+    fi
+  done
+
+  if git -C "$TARGET_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+    local HOOK_PATH
+    HOOK_PATH="$(git -C "$TARGET_DIR" rev-parse --git-path hooks/pre-commit)"
+    case "$HOOK_PATH" in
+      /*) ;;
+      *) HOOK_PATH="$TARGET_DIR/$HOOK_PATH" ;;
+    esac
+    if [ -e "$HOOK_PATH" ]; then
+      echo -e "  - Skipped pre-commit hook (already exists at $HOOK_PATH)"
+    else
+      mkdir -p "$(dirname "$HOOK_PATH")"
+      cp "$DOTFILES_DIR/templates/pre-commit" "$HOOK_PATH"
+      chmod +x "$HOOK_PATH"
+      echo -e "  ${GREEN}✓${NC} Installed $HOOK_PATH"
+    fi
+  else
+    echo -e "  - Skipped pre-commit hook (not a git repository)"
+  fi
+}
+
 # Handle single-command flags
 case "${1:-}" in
   --help|-h)
@@ -84,6 +123,10 @@ case "${1:-}" in
   --remove-skill)
     if [ -z "${2:-}" ]; then echo -e "${RED}Error: Missing skill name.${NC}"; usage; exit 1; fi
     remove_skill "$2"
+    exit 0
+    ;;
+  --init-repo)
+    init_repo "${2:-.}"
     exit 0
     ;;
 esac
